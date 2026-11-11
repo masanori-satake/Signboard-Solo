@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [0.2.0] - 2026-11-12
+
+- Moved the board from its own activity-bar container into the Explorer as a section, so it stays visible while opening files (the board is for peripheral viewing, not for visiting). Users can still drag the section to the secondary side bar or panel.
+- 盤面を専用コンテナからエクスプローラーのセクションへ移設。ファイルを開く作業をしながら眺められるようにした。
+
 ## [0.1.0] - 2026-11-11
 
 - Initial Phase 1 build: data layer over VS Code tabs + split-flap arrivals board in a sidebar view.

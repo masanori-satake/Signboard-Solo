@@ -1,8 +1,14 @@
 # Signboard-Solo
 
-Your open tabs, shown as an airport split-flap arrivals board. It does nothing useful, on purpose — it just sits in the sidebar and flaps, quietly, whenever your files change.
+Your open tabs, shown as an airport split-flap arrivals board. It does nothing useful, on purpose — it just lives in the Explorer and flaps, quietly, whenever your files change.
 
 開いているタブを、空港の到着案内板（ソラリー式のパタパタ）で表示する拡張です。実用性はありません。それが目的です。
+
+## Placement / 置き場所
+
+The board is a section **inside the Explorer**, next to the file tree — not a separate activity-bar panel. You keep the Explorer open to work, so the board stays in your peripheral vision instead of being a place you have to visit. If you prefer it always on screen, drag the section's header to the secondary side bar (right side) or the panel; VS Code remembers the placement.
+
+盤面は専用パネルではなく、**エクスプローラーの中のセクション**です。作業中はエクスプローラーを開いたままにするので、盤面が「見に行く場所」ではなく「視界の端で動くもの」になります。常時表示したい場合は、セクションの見出しを右サイドバーやパネルへドラッグしてください（配置は保持されます）。
 
 ## What it does / 何をするものか
 
