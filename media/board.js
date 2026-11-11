@@ -168,7 +168,7 @@ function computeTier() {
   boardEl.dataset.tier = tier;
 }
 function rowsPerPage() {
-  const rowH = tier === 'wide' ? 41 : 66;
+  const rowH = tier === 'wide' ? 41 : 74;
   const avail = Math.max(rowH, window.innerHeight - 108);
   return Math.max(1, Math.floor(avail / rowH));
 }

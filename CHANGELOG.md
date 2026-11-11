@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.0.2] - 2026-11-12
+
+- Tidied the board layout. The flight count moved from the footer into the column-header row (right end of the FILE line). In the narrow and mini tiers, rows are now a two-column grid: the language logo spans both lines on the left, and the file name and the time/remarks line start at the same horizontal position, instead of the name wrapping onto its own line and the time starting at a different offset.
+- 表示領域を整理した。便数はフッターから列見出しの行（ファイル名の行の右端）へ移動。狭幅では行を2カラムのグリッドにし、ロゴを左に置いてファイル名と時刻・備考の書き始めの位置を揃えた。
+
 ## [1.0.1] - 2026-11-12
 
 - Removed the big bilingual header title (到着案内 / ARRIVALS shown twice, swapped by UI language). The header now carries a single ARRIVALS label next to the 7-segment clock, so it no longer wraps onto two lines in a narrow sidebar.
