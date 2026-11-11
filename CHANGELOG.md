@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [0.3.3] - 2026-11-12
+
+- LED glyph dot budget: kanji were melting because each glyph only had ~7-8 dots of height. Header, ticker, destination, chip and time glyphs now get ~9-11 dots (fonts and row heights scaled up together; the board is slightly taller). Latin names and times were already legible and stay so.
+- LEDの文字のドット数を増やした（漢字1文字あたり縦7〜8ドット→9〜11ドット）。盤面は少し縦長になる。
+
 ## [0.3.2] - 2026-11-12
 
 - LED rendering quality: dots are now lit by glyph coverage. The composed scene is downscaled with filtering (each dot averages its block) instead of sampling a single centre pixel, so thin strokes stop dropping out and letterforms — including the type-chip labels — hold together; partially covered dots render dimmer, like a real LED matrix. The smaller readback also lowers the per-frame cost.

@@ -16,19 +16,19 @@ const SET_SIZE = 4;          // trains per screen (design memo E5)
 const SET_SWITCH_MS = 8000;  // screen switching interval
 const SCALE = 4;             // compose at 4x, sample every 4th pixel
 /* dot-unit geometry */
-const HEADER_D = 10;         // 出発案内 + clock
-const TICKER_D = 11;         // announcement line
-const ROW_D = 13;            // one train row
+const HEADER_D = 12;         // 出発案内 + clock
+const TICKER_D = 13;         // announcement line
+const ROW_D = 14;            // one train row
 const PAD_D = 2;
-const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 75
+const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 83
 const H = H_DOTS * SCALE;
 /* Element sizes in compose px, two sets: at Explorer-section widths the
    wide set would leave the destination only a character or two, so the
    narrow set shrinks the chip, time and status zones first. */
 function geom() {
   return COLS >= 84
-    ? { chipW: 64, chipH: 40, chipFont: 23, destX: 76, destFont: 36, timeFont: 32, statusFont: 28, statusW: 64 }
-    : { chipW: 52, chipH: 40, chipFont: 20, destX: 60, destFont: 30, timeFont: 26, statusFont: 22, statusW: 48 };
+    ? { chipW: 64, chipH: 44, chipFont: 26, destX: 76, destFont: 40, timeFont: 36, statusFont: 30, statusW: 68 }
+    : { chipW: 52, chipH: 44, chipFont: 22, destX: 60, destFont: 34, timeFont: 30, statusFont: 24, statusW: 52 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
@@ -127,19 +127,19 @@ function composeScene(now) {
   cctx.textBaseline = 'alphabetic';
   /* header */
   cctx.fillStyle = '#ffb03a';
-  cctx.font = 'bold 30px ' + FONT;
-  cctx.fillText('出発案内', 2, 31);
+  cctx.font = 'bold 38px ' + FONT;
+  cctx.fillText('出発案内', 2, 40);
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 28px ui-monospace,Menlo,monospace';
+  cctx.font = 'bold 34px ui-monospace,Menlo,monospace';
   const ck = clockNow();
-  cctx.fillText(ck, W - cctx.measureText(ck).width - 2, 31);
+  cctx.fillText(ck, W - cctx.measureText(ck).width - 2, 40);
   /* ticker, directly under the header so it is never cut off */
   const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 34px ' + FONT;
+  cctx.font = 'bold 42px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
   if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, tickerY + 35);
+  cctx.fillText(tickerText, tickerOffset, tickerY + 43);
   tickerOffset -= 3;
   if (tickerOffset < -tw) {
     tickerOffset = null;
@@ -152,7 +152,7 @@ function composeScene(now) {
   const g = geom();
   slice.forEach((r, i) => {
     const y0 = rowsY + i * ROW_D * SCALE;
-    const baseLine = y0 + 40;
+    const baseLine = y0 + 44;
     const [label, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
     const [st, sc] = statusOf(r, blinkOn);
     /* layout: [chip][destination ...][time][status?] */
@@ -168,7 +168,7 @@ function composeScene(now) {
     cctx.fillStyle = '#ffffff';
     cctx.font = 'bold ' + g.chipFont + 'px ' + FONT;
     const lw = cctx.measureText(label).width;
-    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + 37);
+    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + 40);
     cctx.fillStyle = '#ffb03a';
     cctx.font = 'bold ' + g.destFont + 'px ' + FONT;
     cctx.fillText(fitText(destName(r.name), timeX - g.destX - 8), g.destX, baseLine);
