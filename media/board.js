@@ -38,12 +38,16 @@ function tilesFor(name, mini) {
   if (mini) return cjk ? CONFIG.nameTilesCjkMini : CONFIG.nameTilesLatinMini;
   return cjk ? CONFIG.nameTilesCjk : CONFIG.nameTilesLatin;
 }
-function boardName(name, tiles) { return truncMid(stripExt(name), tiles).padEnd(tiles, ' '); }
+function boardName(name, tiles) {
+  const base = stripExt(name);
+  const shown = hasCjk(base) ? base : base.toUpperCase(); // flap wheels are uppercase-only
+  return truncMid(shown, tiles).padEnd(tiles, ' ');
+}
 function hhmm(ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 
 /* ---------- flap engine: one ticker for every tile ---------- */
 const SETS = {
-  latin: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._-#@',
+  latin: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-#@',
   cjk: 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん議事録要件定義設計集計仕様会議顧客売上進捗管理表報告書連絡週次作業画面0123456789._-',
   digit: '0123456789',
 };

@@ -3,6 +3,13 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [0.3.0] - 2026-11-12
+
+- Phase 2: LED mode. Set `signboard.mode` to `led` and the same tabs render as a station dot-matrix departure board — train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking, closed tabs linger as 運休， and a scrolling announcement line (on save: 「まもなく ○○ が到着します」). Screens of 4 trains switch every 8 seconds and jump to the screen of a train that just changed. Changing the setting swaps the renderer live.
+- The Explorer section is now named "Signboard".
+- Flap board: Latin file names are shown in UPPERCASE, like real split-flap character wheels (mixed case read as two different fonts).
+- Phase 2: LEDモードを追加（`signboard.mode: led`）。セクション名を "Signboard" に変更。フラップ盤面の英字を大文字化。
+
 ## [0.2.0] - 2026-11-12
 
 - Moved the board from its own activity-bar container into the Explorer as a section, so it stays visible while opening files (the board is for peripheral viewing, not for visiting). Users can still drag the section to the secondary side bar or panel.

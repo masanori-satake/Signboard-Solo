@@ -43,8 +43,12 @@ function truncMid(text, max) {
 
 // Fixed-width board name: truncated to the tile count, then blank-padded.
 // Blank tiles exist for layout only and never flip.
+// Latin names are shown in UPPERCASE: real split-flap character wheels are
+// uppercase-only, and mixed case reads as two different fonts on the tiles.
 function boardName(fileName, tiles) {
-  return truncMid(stripExt(fileName), tiles).padEnd(tiles, ' ');
+  const base = stripExt(fileName);
+  const shown = hasCjk(base) ? base : base.toUpperCase();
+  return truncMid(shown, tiles).padEnd(tiles, ' ');
 }
 
 function tilesFor(fileName, mini) {

@@ -35,8 +35,13 @@ test('truncMid keeps head and tail', () => {
 
 test('boardName is always exactly the tile count', () => {
   assert.equal([...boardName('extension.ts', 16)].length, 16);
-  assert.equal(boardName('app.js', 16), 'app' + ' '.repeat(13));
+  assert.equal(boardName('app.js', 16), 'APP' + ' '.repeat(13));
   assert.equal([...boardName('プロジェクト進捗管理表.md', 10)].length, 10);
+});
+
+test('boardName uppercases Latin names (flap wheels are uppercase-only)', () => {
+  assert.equal(boardName('extension.ts', 16), 'EXTENSION' + ' '.repeat(7));
+  assert.equal(boardName('会議メモ.md', 10), '会議メモ' + ' '.repeat(6));
 });
 
 test('tilesFor picks CJK and mini counts', () => {

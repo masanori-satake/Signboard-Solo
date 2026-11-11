@@ -20,7 +20,9 @@ The board is a section **inside the Explorer**, next to the file tree — not a 
 - The header clock is a 7-segment LED clock whose colon blinks every second.
 - Narrow sidebar? Rows restack into two tiers instead of truncating.
 
-Phase 1 is the split-flap mode. A station LED dot-matrix mode (Phase 2) and automatic mode switching by view width (Phase 3) are planned; until then, the `signboard.mode` setting falls back to flap.
+Two display modes share one data layer. The split-flap board is the default; set `signboard.mode` to `led` for the station dot-matrix departure board — train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking red, closed tabs lingering as 運休， and a scrolling announcement line. Automatic switching by view width (Phase 3) is still to come; `auto` falls back to flap until then.
+
+表示モードは2つ（フラップ／駅LED）で、データ層は共通です。LEDモードは設定 `signboard.mode: led` で切り替わります。
 
 ## Principles / 原則
 
@@ -30,4 +32,4 @@ Phase 1 is the split-flap mode. A station LED dot-matrix mode (Phase 2) and auto
 
 ## Settings / 設定
 
-- `signboard.mode`: `flap` (default) / `led` / `auto` — led and auto fall back to flap until their phases land.
+- `signboard.mode`: `flap` (default) / `led` / `auto` — auto falls back to flap until Phase 3.

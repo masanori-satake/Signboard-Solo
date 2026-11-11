@@ -173,6 +173,13 @@ class BoardProvider {
     view.webview.onDidReceiveMessage((msg) => {
       if (msg && msg.type === 'ready') this.push(true);
     });
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('signboard.mode') && this.view) {
+        // Swap the renderer (flap <-> LED) by rebuilding the page.
+        this.view.webview.html = this.html(this.view.webview);
+        this.lastSignature = '';
+      }
+    });
     view.onDidChangeVisibility(() => {
       if (view.visible) this.push(true);
     });
@@ -205,9 +212,27 @@ class BoardProvider {
   }
 
   html(webview) {
-    const css = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'board.css'));
-    const js = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', 'board.js'));
+    // Phase 2: mode 'led' renders the station board; 'auto' still falls
+    // back to flap until Phase 3.
+    const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
+    const led = mode === 'led';
+    const cssFile = led ? 'led.css' : 'board.css';
+    const jsFile = led ? 'led.js' : 'board.js';
+    const css = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', cssFile));
+    const js = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', jsFile));
     const nonce = String(Date.now()) + Math.floor(Math.random() * 1e9);
+    const body = led
+      ? '<canvas id="led"></canvas>'
+      : `<div class="board" id="board">
+  <div class="board-head">
+    <span class="title-main" id="titleMain">到着案内</span>
+    <span class="title-sub" id="titleSub">ARRIVALS</span>
+    <span class="clock" id="clock"></span>
+  </div>
+  <div class="cols"><span class="c-logo"></span><span class="c-name" id="colName">ファイル名</span><span class="c-meta"><span class="c-time" id="colTime">最終更新</span><span class="c-rem" id="colRemark">備考</span></span></div>
+  <div id="rows"></div>
+  <div class="board-foot"><span id="pageInfo"></span><span id="flightCount"></span></div>
+</div>`;
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -217,16 +242,7 @@ class BoardProvider {
 <link rel="stylesheet" href="${css}">
 </head>
 <body>
-<div class="board" id="board">
-  <div class="board-head">
-    <span class="title-main" id="titleMain">到着案内</span>
-    <span class="title-sub" id="titleSub">ARRIVALS</span>
-    <span class="clock" id="clock"></span>
-  </div>
-  <div class="cols"><span class="c-logo"></span><span class="c-name" id="colName">ファイル名</span><span class="c-meta"><span class="c-time" id="colTime">最終更新</span><span class="c-rem" id="colRemark">備考</span></span></div>
-  <div id="rows"></div>
-  <div class="board-foot"><span id="pageInfo"></span><span id="flightCount"></span></div>
-</div>
+${body}
 <script nonce="${nonce}" src="${js}"></script>
 </body>
 </html>`;

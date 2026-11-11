@@ -10,7 +10,7 @@
       "properties": {
         "signboard.mode": {
           "default": "flap",
-          "description": "Display mode. Phase 1 implements flap; led and auto arrive in later phases and fall back to flap until then.",
+          "description": "Display mode: flap (split-flap arrivals) or led (station dot-matrix). auto falls back to flap until Phase 3.",
           "enum": [
             "flap",
             "led",
@@ -18,8 +18,8 @@
           ],
           "enumDescriptions": [
             "Airport split-flap arrivals board",
-            "Station LED dot-matrix board (Phase 2)",
-            "Automatic by view width (Phase 3)"
+            "Station LED dot-matrix board",
+            "Automatic by view width (Phase 3; falls back to flap until then)"
           ],
           "type": "string"
         }
@@ -30,7 +30,7 @@
       "explorer": [
         {
           "id": "signboard.board",
-          "name": "到着案内 / Arrivals",
+          "name": "Signboard",
           "type": "webview"
         }
       ]
@@ -53,9 +53,9 @@
   "name": "signboard-solo",
   "publisher": "masanori-satake",
   "scripts": {
-    "check": "node --check src/extension.js && node --check src/model.js && node --check media/board.js",
+    "check": "node --check src/extension.js && node --check src/model.js && node --check media/board.js && node --check media/led.js",
     "package": "npx @vscode/vsce package",
     "test": "node --test test/*.test.js"
   },
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
