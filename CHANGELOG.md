@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.0.3] - 2026-11-12
+
+- Made the 7-segment header clock smaller (digits 13×23 → 11×19 px, tighter spacing), saving both header height and width.
+- ヘッダーの7セグメント時計を小さくし（数字 13×23 → 11×19 px、間隔も詰めた）、高さと横幅を節約した。
+
 ## [1.0.2] - 2026-11-12
 
 - Tidied the board layout. The flight count moved from the footer into the column-header row (right end of the FILE line). In the narrow and mini tiers, rows are now a two-column grid: the language logo spans both lines on the left, and the file name and the time/remarks line start at the same horizontal position, instead of the name wrapping onto its own line and the time starting at a different offset.

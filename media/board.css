@@ -28,19 +28,19 @@ body {
 .board[data-tier="mini"] .cols .c-rem { width: 82px; }
 
 /* 7-segment header clock */
-.clock { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; }
-.seg-digit { position: relative; width: 13px; height: 23px; flex: none; }
+.clock { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; }
+.seg-digit { position: relative; width: 11px; height: 19px; flex: none; }
 .seg { position: absolute; background: #2b130e; border-radius: 2px; }
 .seg.on { background: #ff6a33; box-shadow: 0 0 7px rgba(255, 106, 51, .75); }
 .seg-a { top: 0; left: 2px; right: 2px; height: 3px; }
-.seg-g { top: 10px; left: 2px; right: 2px; height: 3px; }
+.seg-g { top: 8px; left: 2px; right: 2px; height: 3px; }
 .seg-d { bottom: 0; left: 2px; right: 2px; height: 3px; }
-.seg-f { top: 2px; left: 0; width: 3px; height: 8px; }
-.seg-b { top: 2px; right: 0; width: 3px; height: 8px; }
-.seg-e { bottom: 2px; left: 0; width: 3px; height: 8px; }
-.seg-c { bottom: 2px; right: 0; width: 3px; height: 8px; }
-.seg-colon { width: 5px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex: none; }
-.cdot { width: 4px; height: 4px; border-radius: 50%; background: #2b130e; display: block; }
+.seg-f { top: 2px; left: 0; width: 3px; height: 6px; }
+.seg-b { top: 2px; right: 0; width: 3px; height: 6px; }
+.seg-e { bottom: 2px; left: 0; width: 3px; height: 6px; }
+.seg-c { bottom: 2px; right: 0; width: 3px; height: 6px; }
+.seg-colon { width: 4px; display: flex; flex-direction: column; align-items: center; gap: 5px; flex: none; }
+.cdot { width: 3px; height: 3px; border-radius: 50%; background: #2b130e; display: block; }
 .cdot.on { background: #ff6a33; box-shadow: 0 0 7px rgba(255, 106, 51, .75); }
 
 /* rows */
