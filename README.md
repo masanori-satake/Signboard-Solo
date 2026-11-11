@@ -1,13 +1,13 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.0.4-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.1.0-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
 
 Your open tabs, shown as an airport split-flap arrivals board. It does nothing useful, on purpose — it just lives in the Explorer and flaps, quietly, whenever your files change.
 
-Current version: **v1.0.4**
+Current version: **v1.1.0**
 
 開いているタブを、空港の到着案内板（ソラリー式のパタパタ）で表示する拡張です。実用性はありません。それが目的です。
 
@@ -39,4 +39,4 @@ Two display modes share one data layer. The split-flap board is the default; set
 
 ## Settings / 設定
 
-- `signboard.mode`: `flap` (default) / `led` / `auto` — auto falls back to flap until Phase 3.
+- `signboard.mode`: `flap` (default) / `led` / `auto` — auto falls back to flap until Phase 3. The Signboard view title also has a toggle button that switches between flap and LED.

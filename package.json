@@ -1,6 +1,8 @@
 {
   "activationEvents": [
-    "onView:signboard.board"
+    "onView:signboard.board",
+    "onCommand:signboard.showLed",
+    "onCommand:signboard.showFlap"
   ],
   "categories": [
     "Other"
@@ -34,6 +36,32 @@
           "type": "webview"
         }
       ]
+    },
+    "commands": [
+      {
+        "command": "signboard.showLed",
+        "title": "%command.showLed.title%",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "signboard.showFlap",
+        "title": "%command.showFlap.title%",
+        "icon": "$(calendar)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "signboard.showLed",
+          "when": "view == signboard.board && !signboard.isLed",
+          "group": "navigation"
+        },
+        {
+          "command": "signboard.showFlap",
+          "when": "view == signboard.board && signboard.isLed",
+          "group": "navigation"
+        }
+      ]
     }
   },
   "description": "%extension.description%",
@@ -61,7 +89,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.0.4",
+  "version": "1.1.0",
   "icon": "icon.png",
   "repository": {
     "type": "git",

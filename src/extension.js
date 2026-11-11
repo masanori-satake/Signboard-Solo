@@ -248,6 +248,20 @@ ${body}
   }
 }
 
+function syncModeContext() {
+  const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
+  vscode.commands.executeCommand('setContext', 'signboard.isLed', mode === 'led');
+}
+
+async function setMode(next) {
+  const cfg = vscode.workspace.getConfiguration('signboard');
+  const info = cfg.inspect('mode');
+  const target = info && info.workspaceValue !== undefined
+    ? vscode.ConfigurationTarget.Workspace
+    : vscode.ConfigurationTarget.Global;
+  await cfg.update('mode', next, target);
+}
+
 function activate(context) {
   let provider;
   const data = new BoardData((kind, key) => { if (provider) provider.notifyChange(kind, key); });
@@ -257,6 +271,15 @@ function activate(context) {
       webviewOptions: { retainContextWhenHidden: true },
     })
   );
+  // View-title toggle: one of the two commands is visible, by mode.
+  context.subscriptions.push(
+    vscode.commands.registerCommand('signboard.showLed', () => setMode('led')),
+    vscode.commands.registerCommand('signboard.showFlap', () => setMode('flap')),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('signboard.mode')) syncModeContext();
+    })
+  );
+  syncModeContext();
   data.start(context);
   context.subscriptions.push({ dispose: () => data.dispose() });
 }

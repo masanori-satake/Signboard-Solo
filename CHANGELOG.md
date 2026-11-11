@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.1.0] - 2026-11-12
+
+- Added a mode toggle button to the Signboard view title: one click switches between the flap board and the LED board (it writes the `signboard.mode` setting, so the choice is kept). The button shows the mode you can switch to.
+- Signboard ビューのタイトルにモード切替ボタンを追加した。クリックでフラップ表示と LED 表示を切り替えられ、選択は `signboard.mode` 設定に保存される。ボタンには切り替え先のモードが表示される。
+
 ## [1.0.4] - 2026-11-12
 
 - Fixed the page size calculation: it estimated the rows area from the window height minus a fixed allowance, so after the header shrank the board still showed only one flight per page and left the freed space empty. The board now measures the actual rows area and a real row height, and fits as many whole flights per page as the space allows.
