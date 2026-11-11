@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth,
+  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth, parentDirName,
 } = require('../src/model');
 
 test('extOf takes the last extension, lowercased', () => {
@@ -66,6 +66,13 @@ test('paging helpers', () => {
   assert.equal(chunkPages(6, 3), 2);
   assert.equal(pageOfIndex(5, 3), 1);
   assert.equal(pageOfIndex(0, 3), 0);
+});
+
+test('parentDirName takes the containing directory from a URI path', () => {
+  assert.equal(parentDirName('/home/satake/Signboard-Solo/src/extension.js'), 'src');
+  assert.equal(parentDirName('/c:/work/project/README.md'), 'project');
+  assert.equal(parentDirName('/file.ts'), '');
+  assert.equal(parentDirName(''), '');
 });
 
 test('auto mode uses flap below 520px and LED at 520px and wider', () => {

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.3.0] - 2026-11-12
+
+- The LED board's greeting ticker now names a railway line after your work: it thanks riders of “<parent directory of the first file tab>線” instead of Signboard — open a file in a project folder and the board greets that project's line. The line follows the first file tab in tab order and updates when it changes; with no file open, the Signboard greeting remains.
+- LED盤面の案内テロップの挨拶を、その人の作業にちなんだ路線名にした。「Signboard」ではなく、先頭のファイルタブの親ディレクトリ名を使い「本日も ○○線 をご利用くださいまして、ありがとうございます」と流れる。路線名はタブ順の先頭ファイルに追随し、ファイルがないときは従来の Signboard の挨拶のまま。
+
 ## [1.2.1] - 2026-11-12
 
 - Renamed the flap board's name column from FILE / ファイル名 to FLIGHT NAME / 便名, leaning further into the departures-board fiction: each row is a flight, so its name is a flight name.

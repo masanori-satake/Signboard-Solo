@@ -82,6 +82,14 @@ function hhmm(ms) {
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
+// Name of the directory a file lives in, from its URI path (POSIX-style
+// even on Windows). The LED ticker greets riders of "<this>線", named
+// after the first file's parent directory.
+function parentDirName(uriPath) {
+  const parts = String(uriPath).split('/').filter(Boolean);
+  return parts.length >= 2 ? parts[parts.length - 2] : '';
+}
+
 // Phase 3 mode choice: the flap board is the narrow/sidebar form, while
 // the LED board is the wide/panel form. The 520px boundary was the
 // provisional value recorded when the three-phase plan was decided.
@@ -102,4 +110,5 @@ module.exports = {
   pageOfIndex,
   hhmm,
   autoModeForWidth,
+  parentDirName,
 };

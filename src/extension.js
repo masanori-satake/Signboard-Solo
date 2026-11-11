@@ -2,7 +2,7 @@
 
 const vscode = require('vscode');
 const path = require('path');
-const { CONFIG, extOf, statusFor, autoModeForWidth } = require('./model');
+const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName } = require('./model');
 
 /* ------------------------------------------------------------------ *
  * Data layer: turns VS Code's tabs into board rows.
@@ -71,6 +71,7 @@ class BoardData {
           e = {
             key,
             name: uri.scheme === 'untitled' ? tab.label : path.posix.basename(uri.path),
+            dir: uri.scheme === 'file' ? parentDirName(uri.path) : '',
             ext: uri.scheme === 'untitled' ? '' : extOf(path.posix.basename(uri.path)),
             mtime: now,
             savedAt: 0,
@@ -120,6 +121,15 @@ class BoardData {
       this.scheduleGhostCleanup();
       this.onChange('ghost-expire', null);
     }, Math.max(50, next - Date.now()));
+  }
+
+  // The railway line this board serves: the parent directory of the
+  // first file tab, in tab order. Untitled tabs have no directory.
+  lineName() {
+    const first = [...this.entries.values()]
+      .sort((a, b) => a.index - b.index)
+      .find((e) => e.dir);
+    return first ? first.dir : '';
   }
 
   rows() {
@@ -219,8 +229,8 @@ class BoardProvider {
     if (!this.view || !this.view.visible) return;
     const rows = this.data.rows();
     const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
-    const payload = { type: 'state', rows, lang: vscode.env.language, mode };
-    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang;
+    const payload = { type: 'state', rows, lang: vscode.env.language, mode, line: this.data.lineName() };
+    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang + '|' + payload.line;
     if (!force && signature === this.lastSignature) return;
     this.lastSignature = signature;
     // A just-saved or just-cancelled row is the one worth watching: tell the

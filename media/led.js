@@ -42,7 +42,15 @@ const TYPE_BY_EXT = {
   py: ['普通', '#2f9e44'], json: ['普通', '#2f9e44'], html: ['普通', '#2f9e44'],
 };
 const TYPE_DEFAULT = ['各停', '#1971c2'];
-const DEFAULT_TICKER = '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
+/* The line name comes from the host: the parent directory of the first
+   file tab. The greeting thanks riders of that line, like a real station
+   board; with no file open it falls back to the Signboard name. */
+let lineName = '';
+function defaultTicker() {
+  return lineName
+    ? '本日も ' + lineName + '線 をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。'
+    : '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
+}
 const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
 
 function stripExt(n) { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(0, i) : n; }
@@ -101,7 +109,7 @@ let prevByKey = new Map();
 let currentSet = 0;
 let lastSetChange = Date.now();
 let lastEventAt = 0;
-let tickerText = DEFAULT_TICKER;
+let tickerText = defaultTicker();
 let tickerOffset = null; // null = start at right edge
 let announceUntilDone = false;
 
@@ -145,7 +153,7 @@ function composeScene(now) {
   tickerOffset -= 2;
   if (tickerOffset < -tw) {
     tickerOffset = null;
-    if (announceUntilDone) { tickerText = DEFAULT_TICKER; announceUntilDone = false; }
+    if (announceUntilDone) { tickerText = defaultTicker(); announceUntilDone = false; }
   }
   /* train rows */
   const blinkOn = Math.floor(now / 530) % 2 === 0;
@@ -266,6 +274,12 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     layout(); // the section may have been resized since load
+    lineName = msg.line || '';
+    if (!announceUntilDone && tickerText !== defaultTicker()) {
+      // The line changed (a different first file): restart the greeting.
+      tickerText = defaultTicker();
+      tickerOffset = null;
+    }
     const before = prevByKey;
     rows = msg.rows || [];
     for (const r of rows) {
