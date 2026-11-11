@@ -57,5 +57,5 @@
     "package": "npx @vscode/vsce package",
     "test": "node --test test/*.test.js"
   },
-  "version": "0.3.0"
+  "version": "0.3.1"
 }

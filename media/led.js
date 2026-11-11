@@ -3,17 +3,36 @@
    Same rows as the flap board, drawn as a dot-matrix departure board:
    text is composed small on an offscreen canvas and sampled into dots,
    so kanji become dot glyphs as-is. The unlit dot grid is pre-rendered
-   once; each frame only draws the lit dots, batched by colour. */
+   once; each frame only draws the lit dots, batched by colour.
+
+   Layout is defined in DOT units (1 dot = SCALE compose px) so elements
+   keep their proportions at any width; the dot column count adapts to
+   the view width. The announcement ticker sits directly under the
+   header: in a short Explorer section the bottom of the board is cut
+   off, and the announcements are the LED mode's main act. */
 const vscodeApi = acquireVsCodeApi();
 
 const SET_SIZE = 4;          // trains per screen (design memo E5)
 const SET_SWITCH_MS = 8000;  // screen switching interval
-const COLS = 76;             // dots across
 const SCALE = 4;             // compose at 4x, sample every 4th pixel
-const HEADER_H = 44, ROW_H = 60, TICKER_GAP = 8, TICKER_H = 48, PAD_B = 8;
-const W = COLS * SCALE;
-const H = HEADER_H + SET_SIZE * ROW_H + TICKER_GAP + TICKER_H + PAD_B;
-const ROWS_DOTS = Math.round(H / SCALE);
+/* dot-unit geometry */
+const HEADER_D = 10;         // 出発案内 + clock
+const TICKER_D = 11;         // announcement line
+const ROW_D = 13;            // one train row
+const PAD_D = 2;
+const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 75
+const H = H_DOTS * SCALE;
+/* Element sizes in compose px, two sets: at Explorer-section widths the
+   wide set would leave the destination only a character or two, so the
+   narrow set shrinks the chip, time and status zones first. */
+function geom() {
+  return COLS >= 84
+    ? { chipW: 64, chipH: 40, chipFont: 23, destX: 76, destFont: 36, timeFont: 32, statusFont: 28, statusW: 64 }
+    : { chipW: 52, chipH: 40, chipFont: 20, destX: 60, destFont: 30, timeFont: 26, statusFont: 22, statusW: 48 };
+}
+
+let COLS = 76;               // dots across, adapted in layout()
+let W = COLS * SCALE;        // compose width in px
 
 const TYPE_BY_EXT = {
   ts: ['特急', '#e03131'], go: ['特急', '#e03131'],
@@ -22,6 +41,7 @@ const TYPE_BY_EXT = {
 };
 const TYPE_DEFAULT = ['各停', '#1971c2'];
 const DEFAULT_TICKER = '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
+const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
 
 function stripExt(n) { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(0, i) : n; }
 function hasCjk(t) { return /[\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/.test(t); }
@@ -32,22 +52,25 @@ function clockNow() { const d = new Date(); return [d.getHours(), d.getMinutes()
 const canvas = document.getElementById('led');
 const ctx = canvas.getContext('2d');
 const compose = document.createElement('canvas');
-compose.width = W; compose.height = H;
+compose.height = H;
 const cctx = compose.getContext('2d', { willReadFrequently: true });
 const base = document.createElement('canvas');
 
 let pitch = 6, radius = 2;
 function layout() {
-  const w = Math.max(120, canvas.clientWidth || document.body.clientWidth - 16);
+  const w = Math.max(160, canvas.clientWidth || document.body.clientWidth - 16);
+  COLS = Math.max(64, Math.min(150, Math.round(w / 5)));
+  W = COLS * SCALE;
+  if (compose.width !== W) compose.width = W;
   pitch = w / COLS;
   radius = pitch * 0.33;
   canvas.width = Math.round(w);
-  canvas.height = Math.round(pitch * ROWS_DOTS);
+  canvas.height = Math.round(pitch * H_DOTS);
   base.width = canvas.width; base.height = canvas.height;
   const b = base.getContext('2d');
   b.fillStyle = '#060607'; b.fillRect(0, 0, base.width, base.height);
   b.fillStyle = '#1b1116';
-  for (let y = 0; y < ROWS_DOTS; y++) for (let x = 0; x < COLS; x++) {
+  for (let y = 0; y < H_DOTS; y++) for (let x = 0; x < COLS; x++) {
     b.beginPath(); b.arc((x + 0.5) * pitch, (y + 0.5) * pitch, radius, 0, 7); b.fill();
   }
 }
@@ -85,61 +108,72 @@ function announce(text) {
   tickerOffset = null;
   announceUntilDone = true;
 }
+function statusOf(r, blinkOn) {
+  if (r.status === 'delayed') return blinkOn ? ['遅延', '#ff3b30'] : ['', ''];
+  if (r.status === 'cancelled') return ['運休', '#ff3b30'];
+  if (r.status === 'arrived') return ['到着', '#39e75f'];
+  return ['', ''];
+}
 
 function composeScene(now) {
   cctx.clearRect(0, 0, W, H);
   cctx.textBaseline = 'alphabetic';
-  // header
+  /* header */
   cctx.fillStyle = '#ffb03a';
-  cctx.font = 'bold 32px "Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
-  cctx.fillText('出発案内', 2, 34);
+  cctx.font = 'bold 30px ' + FONT;
+  cctx.fillText('出発案内', 2, 31);
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
+  cctx.font = 'bold 28px ui-monospace,Menlo,monospace';
   const ck = clockNow();
-  cctx.fillText(ck, W - cctx.measureText(ck).width - 2, 34);
-  // rows
-  const blinkOn = Math.floor(now / 530) % 2 === 0;
-  const slice = rows.slice(currentSet * SET_SIZE, currentSet * SET_SIZE + SET_SIZE);
-  slice.forEach((r, i) => {
-    const y0 = HEADER_H + i * ROW_H;
-    const [label, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
-    cctx.fillStyle = color;
-    cctx.beginPath();
-    cctx.roundRect(2, y0 + 8, 54, 44, 8);
-    cctx.fill();
-    cctx.fillStyle = '#ffffff';
-    cctx.font = 'bold 29px "Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
-    const tw = cctx.measureText(label).width;
-    cctx.fillText(label, 2 + (54 - tw) / 2, y0 + 41);
-    cctx.fillStyle = '#ffb03a';
-    cctx.font = 'bold 39px "Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
-    cctx.fillText(fitText(destName(r.name), W - 66 - 190), 66, y0 + 45);
-    cctx.fillStyle = '#39e75f';
-    cctx.font = 'bold 35px ui-monospace,Menlo,monospace';
-    const t = hhmm(r.mtime);
-    cctx.fillText(t, W - 108 - cctx.measureText(t).width, y0 + 45);
-    let st = '', sc = '';
-    if (r.status === 'delayed' && blinkOn) { st = '遅延'; sc = '#ff3b30'; }
-    else if (r.status === 'cancelled') { st = '運休'; sc = '#ff3b30'; }
-    else if (r.status === 'arrived') { st = '到着'; sc = '#39e75f'; }
-    if (st) {
-      cctx.fillStyle = sc;
-      cctx.font = 'bold 33px "Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
-      cctx.fillText(st, W - 2 - cctx.measureText(st).width, y0 + 45);
-    }
-  });
-  // ticker
-  const ty = HEADER_H + SET_SIZE * ROW_H + TICKER_GAP;
+  cctx.fillText(ck, W - cctx.measureText(ck).width - 2, 31);
+  /* ticker, directly under the header so it is never cut off */
+  const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 37px "Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
+  cctx.font = 'bold 34px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
   if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, ty + 38);
+  cctx.fillText(tickerText, tickerOffset, tickerY + 35);
   tickerOffset -= 3;
   if (tickerOffset < -tw) {
     tickerOffset = null;
     if (announceUntilDone) { tickerText = DEFAULT_TICKER; announceUntilDone = false; }
   }
+  /* train rows */
+  const blinkOn = Math.floor(now / 530) % 2 === 0;
+  const rowsY = (HEADER_D + TICKER_D) * SCALE;
+  const slice = rows.slice(currentSet * SET_SIZE, currentSet * SET_SIZE + SET_SIZE);
+  const g = geom();
+  slice.forEach((r, i) => {
+    const y0 = rowsY + i * ROW_D * SCALE;
+    const baseLine = y0 + 40;
+    const [label, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
+    const [st, sc] = statusOf(r, blinkOn);
+    /* layout: [chip][destination ...][time][status?] */
+    cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
+    const t = hhmm(r.mtime);
+    const timeW = cctx.measureText(t).width;
+    const timeEnd = st ? W - g.statusW - 4 : W - 2;
+    const timeX = timeEnd - timeW;
+    cctx.fillStyle = color;
+    cctx.beginPath();
+    cctx.roundRect(2, y0 + 6, g.chipW, g.chipH, 8);
+    cctx.fill();
+    cctx.fillStyle = '#ffffff';
+    cctx.font = 'bold ' + g.chipFont + 'px ' + FONT;
+    const lw = cctx.measureText(label).width;
+    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + 37);
+    cctx.fillStyle = '#ffb03a';
+    cctx.font = 'bold ' + g.destFont + 'px ' + FONT;
+    cctx.fillText(fitText(destName(r.name), timeX - g.destX - 8), g.destX, baseLine);
+    cctx.fillStyle = '#39e75f';
+    cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
+    cctx.fillText(t, timeX, baseLine);
+    if (st) {
+      cctx.fillStyle = sc;
+      cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
+      cctx.fillText(st, W - 2 - cctx.measureText(st).width, baseLine);
+    }
+  });
 }
 
 function draw(now) {
@@ -147,7 +181,7 @@ function draw(now) {
   const img = cctx.getImageData(0, 0, W, H).data;
   ctx.drawImage(base, 0, 0);
   const byColor = new Map();
-  for (let dy = 0; dy < ROWS_DOTS; dy++) {
+  for (let dy = 0; dy < H_DOTS; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = (dx * SCALE + 2) + (dy * SCALE + 2) * W;
       const a = img[px * 4 + 3];
@@ -166,12 +200,10 @@ function draw(now) {
     }
     ctx.fill();
   }
-  // set indicator dots (screens) at the top-right corner area
   if (sets() > 1) {
-    ctx.fillStyle = '#3a3a40';
     for (let s = 0; s < sets(); s++) {
       ctx.beginPath();
-      ctx.arc(canvas.width - 10 - (sets() - 1 - s) * 12, 8, s === currentSet ? 3.4 : 2.2, 0, 7);
+      ctx.arc(canvas.width - 10 - (sets() - 1 - s) * 12, canvas.height - 8, s === currentSet ? 3.4 : 2.2, 0, 7);
       ctx.fillStyle = s === currentSet ? '#ffb03a' : '#3a3a40';
       ctx.fill();
     }
@@ -192,6 +224,7 @@ window.addEventListener('message', (ev) => {
   const msg = ev.data;
   if (!msg) return;
   if (msg.type === 'state') {
+    layout(); // the section may have been resized since load
     const before = prevByKey;
     rows = msg.rows || [];
     for (const r of rows) {

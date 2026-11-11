@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [0.3.1] - 2026-11-12
+
+- LED mode layout fix (from real-machine screenshots): the first LED layout reused the wide mock's font sizes on a fixed 76-dot stage, so at Explorer widths the destination collapsed to ~2 characters and the type-chip label spilled out of its chip. Layout is now defined in dot units with two size sets — at narrow widths the chip, time and status zones shrink first — and the destination width is computed from the space actually left. The dot column count adapts to the view width, and the announcement ticker moved directly under the header so it is not cut off in short sections.
+- LEDモードのレイアウトを修正: 行先の幅を実測ベースにし、細幅ではチップ／時刻／状態を先に縮める2段階サイズに。テロップはヘッダー直下へ移動。
+
 ## [0.3.0] - 2026-11-12
 
 - Phase 2: LED mode. Set `signboard.mode` to `led` and the same tabs render as a station dot-matrix departure board — train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking, closed tabs linger as 運休， and a scrolling announcement line (on save: 「まもなく ○○ が到着します」). Screens of 4 trains switch every 8 seconds and jump to the screen of a train that just changed. Changing the setting swaps the renderer live.
