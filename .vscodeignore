@@ -1,0 +1,6 @@
+.git/**
+.github/**
+test/**
+*.md
+!README.md
+!CHANGELOG.md
