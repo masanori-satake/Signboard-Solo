@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.2.1] - 2026-11-12
+
+- Renamed the flap board's name column from FILE / ファイル名 to FLIGHT NAME / 便名, leaning further into the departures-board fiction: each row is a flight, so its name is a flight name.
+- フラップ盤面の名前列の見出しを「ファイル名」から「便名」に変更した（英語は FLIGHT NAME）。1行が1便なので、名前も便名として扱うほうが案内板らしい。
+
 ## [1.2.0] - 2026-11-12
 
 - Phase 3: `signboard.mode: auto` now switches by view width — flap below 520px, LED at 520px and wider — so moving the board from the sidebar to a wide panel changes its form. Also tuned the LED board: the announcement ticker band is about two-thirds of its former height, and binary dot sampling now keeps more of each digit's outline and fills one-dot sampling gaps between same-colour dots, reducing chipped digit contours without bringing back half-bright shading.
