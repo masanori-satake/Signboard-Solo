@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [0.3.2] - 2026-11-12
+
+- LED rendering quality: dots are now lit by glyph coverage. The composed scene is downscaled with filtering (each dot averages its block) instead of sampling a single centre pixel, so thin strokes stop dropping out and letterforms — including the type-chip labels — hold together; partially covered dots render dimmer, like a real LED matrix. The smaller readback also lowers the per-frame cost.
+- LEDのドット化をカバレッジ方式に変更。細い線が抜け落ちなくなり、種別チップの文字も崩れにくくなった。
+
 ## [0.3.1] - 2026-11-12
 
 - LED mode layout fix (from real-machine screenshots): the first LED layout reused the wide mock's font sizes on a fixed 76-dot stage, so at Explorer widths the destination collapsed to ~2 characters and the type-chip label spilled out of its chip. Layout is now defined in dot units with two size sets — at narrow widths the chip, time and status zones shrink first — and the destination width is computed from the space actually left. The dot column count adapts to the view width, and the announcement ticker moved directly under the header so it is not cut off in short sections.

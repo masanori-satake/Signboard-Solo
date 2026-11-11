@@ -55,6 +55,12 @@ const compose = document.createElement('canvas');
 compose.height = H;
 const cctx = compose.getContext('2d', { willReadFrequently: true });
 const base = document.createElement('canvas');
+/* Coverage sampler: the composed scene is downscaled into a COLS x H_DOTS
+   canvas (browser filtering averages each dot's block), so a dot lights
+   by how much of it the glyph actually covers — strokes stop dropping
+   out the way they did with single-centre-pixel sampling. */
+const samp = document.createElement('canvas');
+const sctx = samp.getContext('2d', { willReadFrequently: true });
 
 let pitch = 6, radius = 2;
 function layout() {
@@ -62,6 +68,7 @@ function layout() {
   COLS = Math.max(64, Math.min(150, Math.round(w / 5)));
   W = COLS * SCALE;
   if (compose.width !== W) compose.width = W;
+  if (samp.width !== COLS) { samp.width = COLS; samp.height = H_DOTS; }
   pitch = w / COLS;
   radius = pitch * 0.33;
   canvas.width = Math.round(w);
@@ -178,28 +185,39 @@ function composeScene(now) {
 
 function draw(now) {
   composeScene(now);
-  const img = cctx.getImageData(0, 0, W, H).data;
+  sctx.clearRect(0, 0, COLS, H_DOTS);
+  sctx.imageSmoothingEnabled = true;
+  sctx.imageSmoothingQuality = 'high';
+  sctx.drawImage(compose, 0, 0, COLS, H_DOTS);
+  const img = sctx.getImageData(0, 0, COLS, H_DOTS).data;
   ctx.drawImage(base, 0, 0);
-  const byColor = new Map();
-  for (let dy = 0; dy < H_DOTS; dy++) {
-    for (let dx = 0; dx < COLS; dx++) {
-      const px = (dx * SCALE + 2) + (dy * SCALE + 2) * W;
-      const a = img[px * 4 + 3];
-      if (a < 110) continue;
-      const key = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
-      if (!byColor.has(key)) byColor.set(key, []);
-      byColor.get(key).push(dx, dy);
+  /* pass 0: well-covered dots at full brightness; pass 1: partial
+     coverage at half brightness (the anti-aliased edge of the glyph) */
+  for (let pass = 0; pass < 2; pass++) {
+    const byColor = new Map();
+    for (let dy = 0; dy < H_DOTS; dy++) {
+      for (let dx = 0; dx < COLS; dx++) {
+        const px = dx + dy * COLS;
+        const a = img[px * 4 + 3];
+        const strong = a > 165;
+        if (pass === 0 ? !strong : (a <= 55 || strong)) continue;
+        const key = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
+        if (!byColor.has(key)) byColor.set(key, []);
+        byColor.get(key).push(dx, dy);
+      }
+    }
+    ctx.globalAlpha = pass === 0 ? 1 : 0.42;
+    for (const [key, pts] of byColor) {
+      ctx.fillStyle = 'rgb(' + (key >> 16) + ',' + ((key >> 8) & 255) + ',' + (key & 255) + ')';
+      ctx.beginPath();
+      for (let i = 0; i < pts.length; i += 2) {
+        ctx.moveTo((pts[i] + 0.5) * pitch + radius, (pts[i + 1] + 0.5) * pitch);
+        ctx.arc((pts[i] + 0.5) * pitch, (pts[i + 1] + 0.5) * pitch, radius, 0, 7);
+      }
+      ctx.fill();
     }
   }
-  for (const [key, pts] of byColor) {
-    ctx.fillStyle = 'rgb(' + (key >> 16) + ',' + ((key >> 8) & 255) + ',' + (key & 255) + ')';
-    ctx.beginPath();
-    for (let i = 0; i < pts.length; i += 2) {
-      ctx.moveTo((pts[i] + 0.5) * pitch + radius, (pts[i + 1] + 0.5) * pitch);
-      ctx.arc((pts[i] + 0.5) * pitch, (pts[i + 1] + 0.5) * pitch, radius, 0, 7);
-    }
-    ctx.fill();
-  }
+  ctx.globalAlpha = 1;
   if (sets() > 1) {
     for (let s = 0; s < sets(); s++) {
       ctx.beginPath();
