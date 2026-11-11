@@ -1,6 +1,11 @@
 .git/**
 .github/**
 test/**
+scripts/**
+AGENTS.md
+.gitignore
+.pre-commit-config.yaml
+media/icon.svg
 *.md
 !README.md
 !CHANGELOG.md

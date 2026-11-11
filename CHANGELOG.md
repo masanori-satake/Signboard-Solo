@@ -3,6 +3,14 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.0.0] - 2026-11-12
+
+- First release. Both display modes over one data layer: the airport split-flap arrivals board (default) and the station LED dot-matrix departure board (`signboard.mode: led`), living as a section in the Explorer.
+  - Split-flap: language-logo tiles, file names without extensions in UPPERCASE on fixed-width tiles (blank tiles never flip), last-modified times, remarks as a single word plate (ARRIVED / DELAYED / CANCELLED, Japanese or English by UI language), width tiers with two-tier restacking, page-flip paging with jump-to-updated-flight, and a 7-segment header clock with a blinking colon.
+  - LED: train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking, closed tabs lingering as 運休， scrolling announcements, 4 trains per screen switching every 8 seconds, coverage-based dot sampling.
+  - 100% local, no tracking, no dependencies.
+- 初回リリース。フラップ式到着案内板と駅LED発車標の両モードを搭載し、エクスプローラーのセクションとして表示する。
+
 ## [0.3.3] - 2026-11-12
 
 - LED glyph dot budget: kanji were melting because each glyph only had ~7-8 dots of height. Header, ticker, destination, chip and time glyphs now get ~9-11 dots (fonts and row heights scaled up together; the board is slightly taller). Latin names and times were already legible and stay so.

@@ -10,33 +10,33 @@
       "properties": {
         "signboard.mode": {
           "default": "flap",
-          "description": "Display mode: flap (split-flap arrivals) or led (station dot-matrix). auto falls back to flap until Phase 3.",
+          "description": "%config.mode.description%",
           "enum": [
             "flap",
             "led",
             "auto"
           ],
           "enumDescriptions": [
-            "Airport split-flap arrivals board",
-            "Station LED dot-matrix board",
-            "Automatic by view width (Phase 3; falls back to flap until then)"
+            "%config.mode.flap%",
+            "%config.mode.led%",
+            "%config.mode.auto%"
           ],
           "type": "string"
         }
       },
-      "title": "Signboard-Solo"
+      "title": "%config.title%"
     },
     "views": {
       "explorer": [
         {
           "id": "signboard.board",
-          "name": "Signboard",
+          "name": "%view.name%",
           "type": "webview"
         }
       ]
     }
   },
-  "description": "Your open tabs as an airport split-flap arrivals board. Deliberately useless, quietly soothing. 開いているタブを空港の到着案内板（パタパタ）で表示する、実用性ゼロの癒し拡張。",
+  "description": "%extension.description%",
   "displayName": "Signboard-Solo",
   "engines": {
     "vscode": "^1.90.0"
@@ -54,8 +54,21 @@
   "publisher": "masanori-satake",
   "scripts": {
     "check": "node --check src/extension.js && node --check src/model.js && node --check media/board.js && node --check media/led.js",
-    "package": "npx @vscode/vsce package",
-    "test": "node --test test/*.test.js"
+    "package": "npm run check-version && npx @vscode/vsce package",
+    "test": "node --test test/*.test.js",
+    "check-version": "node scripts/check-version.js",
+    "check-version-bump": "node scripts/check-version.js --check-bump",
+    "update-version": "node scripts/update-version.js",
+    "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "0.3.3"
+  "version": "1.0.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/masanori-satake/Signboard-Solo"
+  },
+  "homepage": "https://github.com/masanori-satake/Signboard-Solo#readme",
+  "bugs": {
+    "url": "https://github.com/masanori-satake/Signboard-Solo/issues"
+  }
 }
