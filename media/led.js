@@ -18,17 +18,19 @@ const SCALE = 4;             // compose at 4x, sample every 4th pixel
 /* dot-unit geometry */
 const HEADER_D = 12;         // 出発案内 + clock
 const TICKER_D = 13;         // announcement line
-const ROW_D = 14;            // one train row
+const ROW_D = 12;            // one train row
 const PAD_D = 2;
-const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 83
+const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 75
 const H = H_DOTS * SCALE;
 /* Element sizes in compose px, two sets: at Explorer-section widths the
    wide set would leave the destination only a character or two, so the
-   narrow set shrinks the chip, time and status zones first. */
+   narrow set shrinks the chip, time and status zones first. The chip is
+   kept as large as the row allows: two kanji in too few dots melt into
+   a blob, which is what the chip sizes guard against. */
 function geom() {
   return COLS >= 84
-    ? { chipW: 64, chipH: 44, chipFont: 26, destX: 76, destFont: 40, timeFont: 36, statusFont: 30, statusW: 68 }
-    : { chipW: 52, chipH: 44, chipFont: 22, destX: 60, destFont: 34, timeFont: 30, statusFont: 24, statusW: 52 };
+    ? { chipW: 76, chipH: 36, chipFont: 30, chipBase: 35, destX: 88, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 }
+    : { chipW: 60, chipH: 36, chipFont: 26, chipBase: 33, destX: 68, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
@@ -152,7 +154,7 @@ function composeScene(now) {
   const g = geom();
   slice.forEach((r, i) => {
     const y0 = rowsY + i * ROW_D * SCALE;
-    const baseLine = y0 + 44;
+    const baseLine = y0 + g.baseLine;
     const [label, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
     const [st, sc] = statusOf(r, blinkOn);
     /* layout: [chip][destination ...][time][status?] */
@@ -168,7 +170,7 @@ function composeScene(now) {
     cctx.fillStyle = '#ffffff';
     cctx.font = 'bold ' + g.chipFont + 'px ' + FONT;
     const lw = cctx.measureText(label).width;
-    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + 40);
+    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + g.chipBase);
     cctx.fillStyle = '#ffb03a';
     cctx.font = 'bold ' + g.destFont + 'px ' + FONT;
     cctx.fillText(fitText(destName(r.name), timeX - g.destX - 8), g.destX, baseLine);
@@ -191,33 +193,29 @@ function draw(now) {
   sctx.drawImage(compose, 0, 0, COLS, H_DOTS);
   const img = sctx.getImageData(0, 0, COLS, H_DOTS).data;
   ctx.drawImage(base, 0, 0);
-  /* pass 0: well-covered dots at full brightness; pass 1: partial
-     coverage at half brightness (the anti-aliased edge of the glyph) */
-  for (let pass = 0; pass < 2; pass++) {
-    const byColor = new Map();
-    for (let dy = 0; dy < H_DOTS; dy++) {
-      for (let dx = 0; dx < COLS; dx++) {
-        const px = dx + dy * COLS;
-        const a = img[px * 4 + 3];
-        const strong = a > 165;
-        if (pass === 0 ? !strong : (a <= 55 || strong)) continue;
-        const key = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
-        if (!byColor.has(key)) byColor.set(key, []);
-        byColor.get(key).push(dx, dy);
-      }
-    }
-    ctx.globalAlpha = pass === 0 ? 1 : 0.42;
-    for (const [key, pts] of byColor) {
-      ctx.fillStyle = 'rgb(' + (key >> 16) + ',' + ((key >> 8) & 255) + ',' + (key & 255) + ')';
-      ctx.beginPath();
-      for (let i = 0; i < pts.length; i += 2) {
-        ctx.moveTo((pts[i] + 0.5) * pitch + radius, (pts[i + 1] + 0.5) * pitch);
-        ctx.arc((pts[i] + 0.5) * pitch, (pts[i + 1] + 0.5) * pitch, radius, 0, 7);
-      }
-      ctx.fill();
+  /* Dots are binary, like a real LED board: coverage past the threshold
+     lights the dot at full brightness, anything less stays dark. The
+     earlier half-brightness pass for partial coverage read as fuzz and
+     made small glyphs harder to read, so it is gone. */
+  const byColor = new Map();
+  for (let dy = 0; dy < H_DOTS; dy++) {
+    for (let dx = 0; dx < COLS; dx++) {
+      const px = dx + dy * COLS;
+      if (img[px * 4 + 3] <= 110) continue;
+      const key = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
+      if (!byColor.has(key)) byColor.set(key, []);
+      byColor.get(key).push(dx, dy);
     }
   }
-  ctx.globalAlpha = 1;
+  for (const [key, pts] of byColor) {
+    ctx.fillStyle = 'rgb(' + (key >> 16) + ',' + ((key >> 8) & 255) + ',' + (key & 255) + ')';
+    ctx.beginPath();
+    for (let i = 0; i < pts.length; i += 2) {
+      ctx.moveTo((pts[i] + 0.5) * pitch + radius, (pts[i + 1] + 0.5) * pitch);
+      ctx.arc((pts[i] + 0.5) * pitch, (pts[i + 1] + 0.5) * pitch, radius, 0, 7);
+    }
+    ctx.fill();
+  }
   if (sets() > 1) {
     for (let s = 0; s < sets(); s++) {
       ctx.beginPath();

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.1.2] - 2026-11-12
+
+- LED board tuning. Rows are slimmer (14 → 12 dots) with slightly smaller destination/time text, so the board reads finer next to the flap board. Dots are now binary — a dot is either fully lit or dark, like a real LED board — instead of half-bright partial-coverage dots that made glyphs fuzzy. The train-type chips are larger with bigger label text, so 特急 / 快速 / 普通 / 各停 stay readable instead of melting into a blob.
+- LED盤面を調整した。行を 14 → 12 ドットに低くし、行先・時刻の文字も少し小さくして、フラップ盤面に近い繊細さにした。ドットは実物の LED と同じく点くか消えるかの二値にし、読みづらさの原因だった中間の濃淡ドットをやめた。種別チップは大きくし、ラベルの文字も大きくして「特急」「快速」「普通」「各停」が潰れて読めない状態を改善した。
+
 ## [1.1.1] - 2026-11-12
 
 - Fixed the column headers drifting out of alignment in the wide tier: the header's name column stretched with the panel width while the rows' name tiles are a fixed field, so UPDATED / REMARKS no longer sat over the time and remark columns after a resize. The header now shares the rows' fixed 270px name field (CJK names fit inside it), and the header time width matches the time tiles exactly.
