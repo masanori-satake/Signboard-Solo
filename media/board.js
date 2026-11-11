@@ -167,9 +167,11 @@ function computeTier() {
   tier = w >= 380 ? 'wide' : w >= 240 ? 'narrow' : 'mini';
   boardEl.dataset.tier = tier;
 }
+let measuredRowH = 0;
 function rowsPerPage() {
-  const rowH = tier === 'wide' ? 41 : 74;
-  const avail = Math.max(rowH, window.innerHeight - 108);
+  const rowH = measuredRowH || (tier === 'wide' ? 41 : 74);
+  // #rows is flex:1, so its clientHeight is exactly the space rows may use.
+  const avail = rowsEl.clientHeight || Math.max(rowH, window.innerHeight - 108);
   return Math.max(1, Math.floor(avail / rowH));
 }
 function pages() { return Math.max(1, Math.ceil(rows.length / rowsPerPage())); }
@@ -216,6 +218,13 @@ function render(pageChanged) {
     setTimeCells(row._time, r.mtime, flapTime);
     setRemark(row._rem, REMARKS[r.status] || REMARKS.ontime, flapRem);
   });
+  // Measure a real row and redo the slice once if the page size was wrong;
+  // measuredRowH is then set, so the corrective pass cannot loop.
+  const firstRow = rowsEl.querySelector('.row');
+  if (firstRow && firstRow.offsetHeight > 0 && firstRow.offsetHeight !== measuredRowH) {
+    measuredRowH = firstRow.offsetHeight;
+    if (rowsPerPage() !== per) { render(pageChanged); return; }
+  }
   document.getElementById('pageInfo').textContent = pg > 1 ? 'PAGE ' + (currentPage + 1) + ' / ' + pg : '';
   document.getElementById('flightCount').textContent = rows.length
     ? (LANG_JA ? rows.length + ' 便' : rows.length + (rows.length === 1 ? ' FLIGHT' : ' FLIGHTS')) : '';

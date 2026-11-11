@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.0.4] - 2026-11-12
+
+- Fixed the page size calculation: it estimated the rows area from the window height minus a fixed allowance, so after the header shrank the board still showed only one flight per page and left the freed space empty. The board now measures the actual rows area and a real row height, and fits as many whole flights per page as the space allows.
+- 1ページに表示する便数の計算を修正。従来はウィンドウ高さから固定値を引く見積もりで、ヘッダーが小さくなっても1便しか表示されず空きが残っていた。行エリアの実寸と行の実高を測り、入るだけの便数を表示するようにした。
+
 ## [1.0.3] - 2026-11-12
 
 - Made the 7-segment header clock smaller (digits 13×23 → 11×19 px, tighter spacing), saving both header height and width.
