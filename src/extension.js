@@ -225,8 +225,7 @@ class BoardProvider {
       ? '<canvas id="led"></canvas>'
       : `<div class="board" id="board">
   <div class="board-head">
-    <span class="title-main" id="titleMain">到着案内</span>
-    <span class="title-sub" id="titleSub">ARRIVALS</span>
+    <span class="title">ARRIVALS</span>
     <span class="clock" id="clock"></span>
   </div>
   <div class="cols"><span class="c-logo"></span><span class="c-name" id="colName">ファイル名</span><span class="c-meta"><span class="c-time" id="colTime">最終更新</span><span class="c-rem" id="colRemark">備考</span></span></div>

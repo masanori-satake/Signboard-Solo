@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.0.1] - 2026-11-12
+
+- Removed the big bilingual header title (到着案内 / ARRIVALS shown twice, swapped by UI language). The header now carries a single ARRIVALS label next to the 7-segment clock, so it no longer wraps onto two lines in a narrow sidebar.
+- ヘッダーの大きな二言語タイトル（到着案内／ARRIVALS の併記）を削除し、ARRIVALS の一語だけにした。狭いサイドバーでも折り返さない。
+
 ## [1.0.0] - 2026-11-12
 
 - First release. Both display modes over one data layer: the airport split-flap arrivals board (default) and the station LED dot-matrix departure board (`signboard.mode: led`), living as a section in the Explorer.

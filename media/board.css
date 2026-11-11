@@ -15,8 +15,7 @@ body {
 }
 .board { padding: 12px 12px 8px; height: 100vh; display: flex; flex-direction: column; }
 .board-head { display: flex; align-items: center; gap: 10px; border-bottom: 2px solid #26262b; padding-bottom: 8px; }
-.title-main { font-size: 17px; font-weight: 700; letter-spacing: .3em; }
-.title-sub { font-size: 10px; letter-spacing: .28em; color: #8b8b95; }
+.title { font-size: 13px; font-weight: 700; letter-spacing: .3em; }
 .cols { display: flex; gap: 10px; padding: 7px 0 2px; font-size: 10px; letter-spacing: .16em; color: #6f6f79; }
 .cols .c-logo { width: 27px; flex: none; }
 .cols .c-name { flex: 1; }

@@ -16,8 +16,6 @@ function setLocale(lang) {
     ? { ontime: '定刻', arrived: '到着', delayed: '遅延', cancelled: '欠航' }
     : { ontime: 'ON TIME', arrived: 'ARRIVED', delayed: 'DELAYED', cancelled: 'CANCELLED' };
   REMARK_WORDS = Object.values(REMARKS);
-  document.getElementById('titleMain').textContent = LANG_JA ? '到着案内' : 'ARRIVALS';
-  document.getElementById('titleSub').textContent = LANG_JA ? 'ARRIVALS' : '到着案内';
   document.getElementById('colName').textContent = LANG_JA ? 'ファイル名' : 'FILE';
   document.getElementById('colTime').textContent = LANG_JA ? '最終更新' : 'UPDATED';
   document.getElementById('colRemark').textContent = LANG_JA ? '備考' : 'REMARKS';
