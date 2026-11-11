@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.2.0] - 2026-11-12
+
+- Phase 3: `signboard.mode: auto` now switches by view width — flap below 520px, LED at 520px and wider — so moving the board from the sidebar to a wide panel changes its form. Also tuned the LED board: the announcement ticker band is about two-thirds of its former height, and binary dot sampling now keeps more of each digit's outline and fills one-dot sampling gaps between same-colour dots, reducing chipped digit contours without bringing back half-bright shading.
+- Phase 3を実装した。`signboard.mode: auto` ではビューの幅で切り替わり、520px未満はフラップ、520px以上は LED になるため、盤面をサイドバーから広いパネルへ移すと形が変わる。あわせて LED を調整した。案内テロップの帯を従来の約2/3の高さにし、二値ドットの判定と同色ドット間の1ドット欠け補完で、濃淡を戻さずに数字の輪郭の欠けを抑えた。
+
 ## [1.1.2] - 2026-11-12
 
 - LED board tuning. Rows are slimmer (14 → 12 dots) with slightly smaller destination/time text, so the board reads finer next to the flap board. Dots are now binary — a dot is either fully lit or dark, like a real LED board — instead of half-bright partial-coverage dots that made glyphs fuzzy. The train-type chips are larger with bigger label text, so 特急 / 快速 / 普通 / 各停 stay readable instead of melting into a blob.

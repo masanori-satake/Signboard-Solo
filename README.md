@@ -1,13 +1,13 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.1.2-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.2.0-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
 
 Your open tabs, shown as an airport split-flap arrivals board. It does nothing useful, on purpose — it just lives in the Explorer and flaps, quietly, whenever your files change.
 
-Current version: **v1.1.2**
+Current version: **v1.2.0**
 
 開いているタブを、空港の到着案内板（ソラリー式のパタパタ）で表示する拡張です。実用性はありません。それが目的です。
 
@@ -27,9 +27,9 @@ The board is a section **inside the Explorer**, next to the file tree — not a 
 - The header clock is a 7-segment LED clock whose colon blinks every second.
 - Narrow sidebar? Rows restack into two tiers instead of truncating.
 
-Two display modes share one data layer. The split-flap board is the default; set `signboard.mode` to `led` for the station dot-matrix departure board — train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking red, closed tabs lingering as 運休， and a scrolling announcement line. Automatic switching by view width (Phase 3) is still to come; `auto` falls back to flap until then.
+Two display modes share one data layer. The split-flap board is the default; set `signboard.mode` to `led` for the station dot-matrix departure board — train type from the language （特急/快速/普通/各停）, destination without extension, departure time = last modified, 遅延 blinking red, closed tabs lingering as 運休， and a scrolling announcement line. With `auto`, the board switches by view width: flap below 520px, LED at 520px and wider.
 
-表示モードは2つ（フラップ／駅LED）で、データ層は共通です。LEDモードは設定 `signboard.mode: led` で切り替わります。
+表示モードは2つ（フラップ／駅LED）で、データ層は共通です。LEDモードは設定 `signboard.mode: led` で切り替わります。`auto` では幅で切り替わり、520px未満はフラップ、520px以上は LED です。
 
 ## Principles / 原則
 
@@ -39,4 +39,4 @@ Two display modes share one data layer. The split-flap board is the default; set
 
 ## Settings / 設定
 
-- `signboard.mode`: `flap` (default) / `led` / `auto` — auto falls back to flap until Phase 3. The Signboard view title also has a toggle button that switches between flap and LED.
+- `signboard.mode`: `flap` (default) / `led` / `auto` — auto uses flap below 520px and LED at 520px and wider. The Signboard view title also has a toggle button that switches between flap and LED.

@@ -13,6 +13,7 @@ const CONFIG = {
   nameTilesCjk: 10,       // fixed flap tiles for CJK names (wider tiles)
   nameTilesLatinMini: 10, // extreme narrow tier
   nameTilesCjkMini: 7,
+  autoLedMinWidth: 520,   // Phase 3: auto uses LED at this width and wider
 };
 
 function extOf(fileName) {
@@ -81,6 +82,13 @@ function hhmm(ms) {
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
+// Phase 3 mode choice: the flap board is the narrow/sidebar form, while
+// the LED board is the wide/panel form. The 520px boundary was the
+// provisional value recorded when the three-phase plan was decided.
+function autoModeForWidth(width) {
+  return Number.isFinite(width) && width >= CONFIG.autoLedMinWidth ? 'led' : 'flap';
+}
+
 module.exports = {
   CONFIG,
   extOf,
@@ -93,4 +101,5 @@ module.exports = {
   chunkPages,
   pageOfIndex,
   hhmm,
+  autoModeForWidth,
 };

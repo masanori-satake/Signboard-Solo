@@ -17,10 +17,10 @@ const SET_SWITCH_MS = 8000;  // screen switching interval
 const SCALE = 4;             // compose at 4x, sample every 4th pixel
 /* dot-unit geometry */
 const HEADER_D = 12;         // 出発案内 + clock
-const TICKER_D = 13;         // announcement line
+const TICKER_D = 9;          // announcement line (about 2/3 of the old 13)
 const ROW_D = 12;            // one train row
 const PAD_D = 2;
-const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 75
+const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 71
 const H = H_DOTS * SCALE;
 /* Element sizes in compose px, two sets: at Explorer-section widths the
    wide set would leave the destination only a character or two, so the
@@ -138,11 +138,11 @@ function composeScene(now) {
   /* ticker, directly under the header so it is never cut off */
   const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 42px ' + FONT;
+  cctx.font = 'bold 28px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
   if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, tickerY + 43);
-  tickerOffset -= 3;
+  cctx.fillText(tickerText, tickerOffset, tickerY + 31);
+  tickerOffset -= 2;
   if (tickerOffset < -tw) {
     tickerOffset = null;
     if (announceUntilDone) { tickerText = DEFAULT_TICKER; announceUntilDone = false; }
@@ -196,13 +196,38 @@ function draw(now) {
   /* Dots are binary, like a real LED board: coverage past the threshold
      lights the dot at full brightness, anything less stays dark. The
      earlier half-brightness pass for partial coverage read as fuzz and
-     made small glyphs harder to read, so it is gone. */
+     made small glyphs harder to read, so it is gone. The threshold is
+     low enough to keep thin digit strokes, and a final pass fills a
+     one-dot gap when the dots on both sides share a colour: that is a
+     sampling notch in a stroke, not a real gap in the glyph. */
+  const lit = new Uint8Array(COLS * H_DOTS);
+  const dotKey = new Int32Array(COLS * H_DOTS).fill(-1);
+  for (let dy = 0; dy < H_DOTS; dy++) {
+    for (let dx = 0; dx < COLS; dx++) {
+      const px = dx + dy * COLS;
+      if (img[px * 4 + 3] <= 84) continue;
+      lit[px] = 1;
+      dotKey[px] = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
+    }
+  }
+  for (let dy = 1; dy < H_DOTS - 1; dy++) {
+    for (let dx = 1; dx < COLS - 1; dx++) {
+      const px = dx + dy * COLS;
+      if (lit[px]) continue;
+      const horizontal = dotKey[px - 1] >= 0 && dotKey[px - 1] === dotKey[px + 1];
+      const vertical = dotKey[px - COLS] >= 0 && dotKey[px - COLS] === dotKey[px + COLS];
+      if (horizontal || vertical) {
+        lit[px] = 1;
+        dotKey[px] = horizontal ? dotKey[px - 1] : dotKey[px - COLS];
+      }
+    }
+  }
   const byColor = new Map();
   for (let dy = 0; dy < H_DOTS; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = dx + dy * COLS;
-      if (img[px * 4 + 3] <= 110) continue;
-      const key = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
+      if (!lit[px]) continue;
+      const key = dotKey[px];
       if (!byColor.has(key)) byColor.set(key, []);
       byColor.get(key).push(dx, dy);
     }
@@ -261,13 +286,19 @@ window.addEventListener('message', (ev) => {
   }
 });
 
+function reportWidth() {
+  if (window.__SB_AUTO) vscodeApi.postMessage({ type: 'width', width: window.innerWidth });
+}
+
 let resizeAt = 0;
 window.addEventListener('resize', () => {
   const now = Date.now();
   if (now - resizeAt < 150) return;
   resizeAt = now;
+  reportWidth();
   layout();
 });
 
 layout();
+reportWidth();
 vscodeApi.postMessage({ type: 'ready' });

@@ -275,11 +275,16 @@ window.addEventListener('wheel', (e) => {
   render(true);
 }, { passive: true });
 
+function reportWidth() {
+  if (window.__SB_AUTO) vscodeApi.postMessage({ type: 'width', width: window.innerWidth });
+}
+
 let resizeAt = 0;
 window.addEventListener('resize', () => {
   const now = Date.now();
   if (now - resizeAt < 120) return;
   resizeAt = now;
+  reportWidth();
   render(false);
 });
 
@@ -333,4 +338,5 @@ setInterval(tickClock, 1000);
 tickClock();
 
 computeTier();
+reportWidth();
 vscodeApi.postMessage({ type: 'ready' });

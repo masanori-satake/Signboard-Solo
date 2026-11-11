@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex,
+  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth,
 } = require('../src/model');
 
 test('extOf takes the last extension, lowercased', () => {
@@ -66,4 +66,11 @@ test('paging helpers', () => {
   assert.equal(chunkPages(6, 3), 2);
   assert.equal(pageOfIndex(5, 3), 1);
   assert.equal(pageOfIndex(0, 3), 0);
+});
+
+test('auto mode uses flap below 520px and LED at 520px and wider', () => {
+  assert.equal(autoModeForWidth(519), 'flap');
+  assert.equal(autoModeForWidth(CONFIG.autoLedMinWidth), 'led');
+  assert.equal(autoModeForWidth(1200), 'led');
+  assert.equal(autoModeForWidth(Number.NaN), 'flap');
 });

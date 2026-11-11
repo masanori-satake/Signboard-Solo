@@ -2,7 +2,7 @@
 
 const vscode = require('vscode');
 const path = require('path');
-const { CONFIG, extOf, statusFor } = require('./model');
+const { CONFIG, extOf, statusFor, autoModeForWidth } = require('./model');
 
 /* ------------------------------------------------------------------ *
  * Data layer: turns VS Code's tabs into board rows.
@@ -161,6 +161,8 @@ class BoardProvider {
     this.view = null;
     this.lastSignature = '';
     this.tick = null;
+    this.autoRenderer = 'flap';
+    this.onRendererChange = null;
   }
 
   resolveWebviewView(view) {
@@ -172,10 +174,13 @@ class BoardProvider {
     view.webview.html = this.html(view.webview);
     view.webview.onDidReceiveMessage((msg) => {
       if (msg && msg.type === 'ready') this.push(true);
+      if (msg && msg.type === 'width') this.handleWidth(msg.width);
     });
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('signboard.mode') && this.view) {
-        // Swap the renderer (flap <-> LED) by rebuilding the page.
+        // Swap the renderer (flap <-> LED) by rebuilding the page. Auto
+        // starts from flap; the new page immediately reports its width.
+        this.autoRenderer = 'flap';
         this.view.webview.html = this.html(this.view.webview);
         this.lastSignature = '';
       }
@@ -186,6 +191,27 @@ class BoardProvider {
     // Arrival windows and ghost expiries are time-based; re-check cheaply.
     this.tick = setInterval(() => this.push(false), 1000);
     view.onDidDispose(() => { if (this.tick) clearInterval(this.tick); });
+    this.push(true);
+  }
+
+  configuredMode() {
+    return vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
+  }
+
+  effectiveMode() {
+    const mode = this.configuredMode();
+    return mode === 'auto' ? this.autoRenderer : mode;
+  }
+
+  handleWidth(width) {
+    if (!this.view || this.configuredMode() !== 'auto') return;
+    const desired = autoModeForWidth(width);
+    if (desired === this.autoRenderer) return;
+    this.autoRenderer = desired;
+    // Rebuilding with the other renderer is the mode switch itself; its
+    // page reports the same width on load, so this cannot oscillate.
+    this.view.webview.html = this.html(this.view.webview);
+    this.lastSignature = '';
     this.push(true);
   }
 
@@ -212,15 +238,18 @@ class BoardProvider {
   }
 
   html(webview) {
-    // Phase 2: mode 'led' renders the station board; 'auto' still falls
-    // back to flap until Phase 3.
-    const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
-    const led = mode === 'led';
+    const mode = this.configuredMode();
+    const effectiveMode = this.effectiveMode();
+    const led = effectiveMode === 'led';
+    if (this.onRendererChange) this.onRendererChange(effectiveMode);
     const cssFile = led ? 'led.css' : 'board.css';
     const jsFile = led ? 'led.js' : 'board.js';
     const css = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', cssFile));
     const js = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', jsFile));
     const nonce = String(Date.now()) + Math.floor(Math.random() * 1e9);
+    const autoScript = mode === 'auto'
+      ? `<script nonce="${nonce}">window.__SB_AUTO = true;</script>\n`
+      : '';
     const body = led
       ? '<canvas id="led"></canvas>'
       : `<div class="board" id="board">
@@ -242,14 +271,14 @@ class BoardProvider {
 </head>
 <body>
 ${body}
-<script nonce="${nonce}" src="${js}"></script>
+${autoScript}<script nonce="${nonce}" src="${js}"></script>
 </body>
 </html>`;
   }
 }
 
-function syncModeContext() {
-  const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
+function syncModeContext(effectiveMode) {
+  const mode = effectiveMode || vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
   vscode.commands.executeCommand('setContext', 'signboard.isLed', mode === 'led');
 }
 
@@ -266,6 +295,7 @@ function activate(context) {
   let provider;
   const data = new BoardData((kind, key) => { if (provider) provider.notifyChange(kind, key); });
   provider = new BoardProvider(context, data);
+  provider.onRendererChange = syncModeContext;
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider('signboard.board', provider, {
       webviewOptions: { retainContextWhenHidden: true },
