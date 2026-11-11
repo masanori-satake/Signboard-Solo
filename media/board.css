@@ -20,7 +20,13 @@ body {
 .cols .c-logo { width: 27px; flex: none; }
 .cols .c-name { flex: 1; }
 .cols .c-meta { display: flex; gap: 10px; }
-.cols .c-time { width: 78px; }
+.cols .c-time { width: 76px; }
+/* Wide tier: the header must share the rows' fixed name field, or the
+   UPDATED / REMARKS labels drift away from the columns below when the
+   panel is wider than the row content. CJK names (10 x 25px) fit inside
+   the 270px Latin field, so every row's meta starts at the same x. */
+.board[data-tier="wide"] .cols .c-name { flex: none; width: 270px; }
+.board[data-tier="wide"] .cells.name { width: 270px; }
 .cols .c-rem { width: 112px; }
 .board[data-tier="narrow"] .cols .c-meta,
 .board[data-tier="mini"] .cols .c-meta { display: none; }

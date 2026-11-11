@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.1.1] - 2026-11-12
+
+- Fixed the column headers drifting out of alignment in the wide tier: the header's name column stretched with the panel width while the rows' name tiles are a fixed field, so UPDATED / REMARKS no longer sat over the time and remark columns after a resize. The header now shares the rows' fixed 270px name field (CJK names fit inside it), and the header time width matches the time tiles exactly.
+- 広い表示で列見出しがずれる問題を修正。見出しのファイル名列がパネル幅に伸びる一方、行の名前タイルは固定幅だったため、幅を変えると「最終更新」「備考」が時刻・備考の列の上に来なくなっていた。見出しも行と同じ固定幅（270px、日本語名もこの内側に収まる）にし、時刻列の幅もタイルと一致させた。
+
 ## [1.1.0] - 2026-11-12
 
 - Added a mode toggle button to the Signboard view title: one click switches between the flap board and the LED board (it writes the `signboard.mode` setting, so the choice is kept). The button shows the mode you can switch to.
