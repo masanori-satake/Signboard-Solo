@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.7.2] - 2026-11-12
+
+- Reverted the LED renderer to the 1.5.4 state: after comparing screenshots, that rendering read better than the 1.6.0–1.7.1 legibility experiments (supersampled sampling, palette snapping, prototype-mock proportions, coloured type text / restored chips on a taller row). The renderer file is byte-identical to 1.5.4's; everything else (dynamic rows per screen, English labels, the line-name ticker, and all flap-side and data-layer fixes through 1.7.1) is unchanged.
+- LED の描画を 1.5.4 の状態に戻した。実機の画像を見比べた結果、1.6.0〜1.7.1 の視認性実験（スーパーサンプリング、パレット寄せ、プロトタイプ・モックの比率移植、種別の色文字化／チップ復帰＋行拡大）より、以前の描画の方が読みやすいと判断されたため。描画ファイルは 1.5.4 と同一で、それ以外（行数の実測追従、英語ラベル、路線名テロップ、フラップ側とデータ層の 1.7.1 までの修正）は変わらない。
+
 ## [1.7.1] - 2026-11-12
 
 - Restored the train-type chips (filled colour pill, white label, the previous colours) in place of 1.7.0's coloured type text — the chip's colour usage was the preferred one. The rest of 1.7.0 stays: the taller 12-dot row gives the chip label more dots than the old 9-dot row did, and palette snapping keeps the label/chip boundary decisive.
