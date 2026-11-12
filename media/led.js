@@ -37,17 +37,17 @@ function boardDots() { return HEADER_D + TICKER_D + rowsShown() * ROW_D + PAD_D;
    sizes guard against. */
 function geom() {
   /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
-     so the label zone grows in English and the destination shifts
+     so the type chip grows in English and the destination shifts
      right. Sizes fit the 12-dot row: fonts stay as large as the row
      allows. */
   if (COLS >= 84) {
     return LANG_JA
-      ? { typeW: 88, typeFont: 40, typeBase: 40, destX: 96, destFont: 42, timeFont: 38, statusFont: 36, statusW: 68, baseLine: 40 }
-      : { typeW: 118, typeFont: 30, typeBase: 40, destX: 130, destFont: 42, timeFont: 38, statusFont: 36, statusW: 68, baseLine: 40 };
+      ? { chipW: 88, chipH: 36, chipFont: 30, chipBase: 34, destX: 96, destFont: 42, timeFont: 38, statusFont: 36, statusW: 68, baseLine: 40 }
+      : { chipW: 118, chipH: 36, chipFont: 28, chipBase: 34, destX: 130, destFont: 42, timeFont: 38, statusFont: 36, statusW: 68, baseLine: 40 };
   }
   return LANG_JA
-    ? { typeW: 80, typeFont: 36, typeBase: 40, destX: 88, destFont: 38, timeFont: 34, statusFont: 32, statusW: 52, baseLine: 40 }
-    : { typeW: 110, typeFont: 27, typeBase: 40, destX: 118, destFont: 38, timeFont: 34, statusFont: 32, statusW: 52, baseLine: 40 };
+    ? { chipW: 80, chipH: 36, chipFont: 27, chipBase: 34, destX: 88, destFont: 38, timeFont: 34, statusFont: 32, statusW: 52, baseLine: 40 }
+    : { chipW: 110, chipH: 36, chipFont: 25, chipBase: 34, destX: 118, destFont: 38, timeFont: 34, statusFont: 32, statusW: 52, baseLine: 40 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
@@ -55,15 +55,14 @@ let W = COLS * SCALE;        // compose backing width in px
 let W4 = COLS * UNIT;        // compose width in drawing units
 
 /* [Japanese label, English label, colour] — the board follows the
-   VS Code display language, like the flap board does. The type is
-   coloured text (the prototype mock's way), in the mock's bright
-   text-on-black colours. */
+   VS Code display language, like the flap board does. The type is a
+   filled chip in these colours with a white label. */
 const TYPE_BY_EXT = {
-  ts: ['特急', 'LTD EXP', '#ff5a3c'], go: ['特急', 'LTD EXP', '#ff5a3c'],
-  js: ['快速', 'RAPID', '#ff9f1c'], css: ['快速', 'RAPID', '#ff9f1c'], rs: ['快速', 'RAPID', '#ff9f1c'],
-  py: ['普通', 'LOCAL', '#3ddc68'], json: ['普通', 'LOCAL', '#3ddc68'], html: ['普通', 'LOCAL', '#3ddc68'],
+  ts: ['特急', 'LTD EXP', '#e03131'], go: ['特急', 'LTD EXP', '#e03131'],
+  js: ['快速', 'RAPID', '#f08c00'], css: ['快速', 'RAPID', '#f08c00'], rs: ['快速', 'RAPID', '#f08c00'],
+  py: ['普通', 'LOCAL', '#2f9e44'], json: ['普通', 'LOCAL', '#2f9e44'], html: ['普通', 'LOCAL', '#2f9e44'],
 };
-const TYPE_DEFAULT = ['各停', 'ALL-STOPS', '#4cc3ff'];
+const TYPE_DEFAULT = ['各停', 'ALL-STOPS', '#1971c2'];
 /* Every colour the scene is painted in. Sampled dots are snapped to the
    nearest palette colour: a cell straddling two colours otherwise
    renders as a murky mixed dot, and strings of those are what melt
@@ -73,10 +72,11 @@ const PALETTE = [
   [255, 160, 46],  // ticker orange
   [57, 231, 95],   // time / arrived green
   [255, 59, 48],   // delayed / cancelled red
-  [255, 90, 60],   // type: 特急 / LTD EXP
-  [255, 159, 28],  // type: 快速 / RAPID
-  [61, 220, 104],  // type: 普通 / LOCAL
-  [76, 195, 255],  // type: 各停 / ALL-STOPS
+  [255, 255, 255], // chip labels
+  [224, 49, 49],   // chip: 特急 / LTD EXP
+  [240, 140, 0],   // chip: 快速 / RAPID
+  [47, 158, 68],   // chip: 普通 / LOCAL
+  [25, 113, 194],  // chip: 各停 / ALL-STOPS
 ];
 let LANG_JA = false;
 /* The line name comes from the host: the parent directory of the first
@@ -244,18 +244,24 @@ function composeScene(now) {
     }
     const timeEnd = st ? W4 - statusW - 4 : W4 - 2;
     const timeX = timeEnd - timeW;
-    /* The type is coloured text, as in the prototype mock — white text
-       on a filled coloured chip was the worst-melting element on the
-       board (every dot cell mixed the two colours). Shrink the label
-       until it fits its zone (mainly for the English words). */
-    let typeFont = g.typeFont;
-    cctx.font = typeFont + 'px ' + FONT;
-    while (typeFont > 14 && cctx.measureText(label).width > g.typeW - 4) {
-      typeFont -= 2;
-      cctx.font = typeFont + 'px ' + FONT;
-    }
+    /* The type is a filled chip with a white label. (Coloured text, the
+       prototype mock's way, was tried in 1.7.0; the chip's colour usage
+       was preferred, so it is back — now on the taller 12-dot row,
+       whose extra dots plus palette snapping keep the label decisive.)
+       Shrink the label until it fits (mainly for the English words). */
     cctx.fillStyle = color;
-    cctx.fillText(label, 2, y0 + g.typeBase);
+    cctx.beginPath();
+    cctx.roundRect(2, y0 + 6, g.chipW, g.chipH, 8);
+    cctx.fill();
+    let chipFont = g.chipFont;
+    cctx.font = 'bold ' + chipFont + 'px ' + FONT;
+    while (chipFont > 12 && cctx.measureText(label).width > g.chipW - 8) {
+      chipFont -= 2;
+      cctx.font = 'bold ' + chipFont + 'px ' + FONT;
+    }
+    cctx.fillStyle = '#ffffff';
+    const lw = cctx.measureText(label).width;
+    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + g.chipBase);
     cctx.fillStyle = '#ffb03a';
     cctx.font = g.destFont + 'px ' + FONT;
     /* A breath of letter spacing keeps neighbouring glyphs from

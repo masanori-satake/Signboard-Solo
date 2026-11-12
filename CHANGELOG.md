@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.7.1] - 2026-11-12
+
+- Restored the train-type chips (filled colour pill, white label, the previous colours) in place of 1.7.0's coloured type text — the chip's colour usage was the preferred one. The rest of 1.7.0 stays: the taller 12-dot row gives the chip label more dots than the old 9-dot row did, and palette snapping keeps the label/chip boundary decisive.
+- 種別表示を、1.7.0 の色文字から、前の色使い（色付きチップ＋白文字）に戻した。1.7.0 の他の部分（行12ドット化など）はそのままなので、チップの文字が使えるドット数は以前の9ドット行より増え、パレット寄せで文字とチップの境界も保たれる。
+
 ## [1.7.0] - 2026-11-12
 
 - Rebuilt the LED board's proportions on the pre-implementation prototype mock, which rendered far more legibly: glyphs there had about 11 dots each, while the shipped board had squeezed them to 6–7.5 dots over successive "lower and finer" adjustments. Rows are 12 dots again (header 12, ticker 11) with fonts at roughly 10–11 dots per glyph, body text returns to regular weight (bold strokes fuse at dot resolution), dots are fuller (radius ratio 0.36, the mock's proportion), and the train type is coloured text in the mock's bright colours instead of white text on a filled chip — the chip was the worst-melting element, since every dot cell mixed the label and chip colours. The cost is the one the mock accepted: fewer trains fit on one screen, and the board pages like the mock did.
