@@ -34,7 +34,7 @@ function geom() {
   /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
      so the chip grows in English and the destination shifts right.
      Sizes fit the 9-dot row: fonts stay as large as the row allows. */
-  if (COLS >= 84) {
+  if (COLS >= 72) {
     return LANG_JA
       ? { chipW: 76, chipH: 28, chipFont: 24, chipBase: 27, destX: 88, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 }
       : { chipW: 118, chipH: 28, chipFont: 24, chipBase: 27, destX: 130, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 };
@@ -92,8 +92,11 @@ const sctx = samp.getContext('2d', { willReadFrequently: true });
 let pitch = 6, radius = 2;
 function layout() {
   const w = Math.max(160, canvas.clientWidth || document.body.clientWidth - 16);
-  /* Finer grain: more, smaller dots across the same width. */
-  COLS = Math.max(64, Math.min(230, Math.round(w / 3.2)));
+  /* Grain: about 4.3px per dot. At sidebar widths the finer 3.2px
+     grain made glyphs read thin; 4.3px is the size the dots reached
+     on a wide panel (where the 230-column cap used to take over), and
+     that fuller look is now the norm at every width. */
+  COLS = Math.max(64, Math.min(230, Math.round(w / 4.3)));
   W = COLS * SCALE;
   if (compose.width !== W) compose.width = W;
   pitch = w / COLS;

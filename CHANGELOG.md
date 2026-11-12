@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.7.3] - 2026-11-12
+
+- Larger LED dots: the grain target changed from 3.2px to about 4.3px per dot — the size the dots used to reach only on a wide panel (where the 230-column cap took over), which is the fuller look the board had in that state. At sidebar widths the dots now render at that size too. The wide-geometry threshold dropped from 84 to 72 columns so typical sidebar widths keep the full-size fonts instead of falling into the narrow set; the trade-off is fewer dot columns across, so long destinations truncate a little sooner.
+- LED のドットを大きくした。粒度の基準を 3.2px から約 4.3px/ドットに変更——広いパネルで列数上限（230）に当たったときにだけ出ていた大きさで、その見た目をサイドバー幅でも再現する。あわせて通常ジオメトリへの切替境界を 84 列から 72 列に下げ、サイドバー幅でも狭幅用の小さいフォントに落ちないようにした。代償として横のドット数は減り、長い行先は少し早く省略される。
+
 ## [1.7.2] - 2026-11-12
 
 - Reverted the LED renderer to the 1.5.4 state: after comparing screenshots, that rendering read better than the 1.6.0–1.7.1 legibility experiments (supersampled sampling, palette snapping, prototype-mock proportions, coloured type text / restored chips on a taller row). The renderer file is byte-identical to 1.5.4's; everything else (dynamic rows per screen, English labels, the line-name ticker, and all flap-side and data-layer fixes through 1.7.1) is unchanged.
