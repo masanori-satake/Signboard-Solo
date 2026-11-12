@@ -100,6 +100,46 @@ function autoModeForWidth(width) {
   return Number.isFinite(width) && width >= CONFIG.autoLedMinWidth ? 'led' : 'flap';
 }
 
+/* Display order for live rows plus lingering CANCELLED ghosts.
+   Live keys follow the current tab order. A ghost is not part of that
+   order anymore, so it anchors to the first live key that followed it
+   in the previous display order and is emitted just before that key;
+   ghosts with no live key after them trail at the end. (Numbering live
+   rows 0..n and letting a ghost keep its old number collides: closing
+   the 2nd of 4 tabs renumbered the 3rd tab to 1, tying with the ghost
+   at 1, and the stable sort then showed the ghost one row too low.) */
+function mergeOrder(prevOrder, liveOrder, ghostKeys) {
+  const liveSet = new Set(liveOrder);
+  const ghosts = [...ghostKeys].sort((a, b) => {
+    const ia = prevOrder.indexOf(a), ib = prevOrder.indexOf(b);
+    return (ia < 0 ? Number.MAX_SAFE_INTEGER : ia) - (ib < 0 ? Number.MAX_SAFE_INTEGER : ib);
+  });
+  const anchored = new Map(); // live key -> ghost keys emitted before it
+  const trailing = [];
+  for (const g of ghosts) {
+    const gi = prevOrder.indexOf(g);
+    let anchor = null;
+    if (gi >= 0) {
+      for (let j = gi + 1; j < prevOrder.length; j++) {
+        if (liveSet.has(prevOrder[j])) { anchor = prevOrder[j]; break; }
+      }
+    }
+    if (anchor) {
+      if (!anchored.has(anchor)) anchored.set(anchor, []);
+      anchored.get(anchor).push(g);
+    } else {
+      trailing.push(g);
+    }
+  }
+  const order = [];
+  for (const k of liveOrder) {
+    if (anchored.has(k)) order.push(...anchored.get(k));
+    order.push(k);
+  }
+  order.push(...trailing);
+  return order;
+}
+
 module.exports = {
   CONFIG,
   extOf,
@@ -114,4 +154,5 @@ module.exports = {
   hhmm,
   autoModeForWidth,
   parentDirName,
+  mergeOrder,
 };

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.5.4] - 2026-11-12
+
+- Fixed the cancelled row appearing one position too low: closing the second of four tabs made the *third* row show CANCELLED. Live rows were renumbered compactly (0, 1, 2) while the closed tab's ghost kept its old number (1), so the tie sorted the ghost below the tab that had moved up. Live rows and ghosts now share one merged ordering — a ghost anchors to the live row that followed it and stays in its own place on the board (both display modes).
+- 欠航の行が1つ下にずれる不具合を直した。4つのタブの2番目を閉じると、3番目の行が欠航になっていた。残った行は詰めて振り直され（0, 1, 2）、閉じたタブの残像は古い番号（1）を保持するため、同点になって残像が下に並んでいた。残った行と残像で1つの並び順を共有し、残像は「自分の後ろにいた行」の直前に anchor して元の場所に留まるようにした（両盤面共通）。
+
 ## [1.5.3] - 2026-11-12
 
 - Fixed the LED board appearing vertically squashed right after switching from the flap board: at load, the board laid itself out for the maximum row count (no rows known yet), and when the actual rows arrived, the sampler kept the stale tall geometry, squeezing the scene into a fraction of the dot height until the next resize. Layout now runs after the new rows land, and each frame refuses to sample with geometry the canvases were not laid out for.

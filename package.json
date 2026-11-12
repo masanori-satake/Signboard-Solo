@@ -92,7 +92,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.5.3",
+  "version": "1.5.4",
   "icon": "icon.png",
   "repository": {
     "type": "git",

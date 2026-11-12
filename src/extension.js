@@ -2,7 +2,7 @@
 
 const vscode = require('vscode');
 const path = require('path');
-const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName } = require('./model');
+const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName, mergeOrder } = require('./model');
 
 /* ------------------------------------------------------------------ *
  * Data layer: turns VS Code's tabs into board rows.
@@ -14,6 +14,7 @@ class BoardData {
     this.onChange = onChange;
     this.entries = new Map(); // key -> entry (live tabs)
     this.ghosts = new Map();  // key -> entry with cancelled=true, expiresAt
+    this.lastOrder = [];      // keys in display order after the last refresh
     this.activeKey = null;
     this.disposables = [];
     this.ghostTimer = null;
@@ -55,6 +56,7 @@ class BoardData {
   refresh() {
     const now = Date.now();
     const seen = new Set();
+    const liveOrder = [];
     const freshStats = [];
     let order = 0;
     let newActiveKey = null;
@@ -65,6 +67,7 @@ class BoardData {
         if (!uri) continue; // settings, webviews etc. are not flights
         if (uri.scheme !== 'file' && uri.scheme !== 'untitled') continue;
         const key = uri.toString();
+        if (!seen.has(key)) liveOrder.push(key);
         seen.add(key);
         let e = this.entries.get(key);
         if (!e) {
@@ -98,6 +101,15 @@ class BoardData {
         }
       }
     }
+    /* One shared numbering for live rows and ghosts: ghosts keep the
+       place they held on the board instead of colliding with the
+       renumbered live rows (see mergeOrder in model.js). */
+    const merged = mergeOrder(this.lastOrder, liveOrder, [...this.ghosts.keys()]);
+    merged.forEach((key, i) => {
+      const e = this.entries.get(key) || this.ghosts.get(key);
+      if (e) e.index = i;
+    });
+    this.lastOrder = merged;
     this.activeKey = newActiveKey;
     this.scheduleGhostCleanup();
     this.onChange('tabs', null);

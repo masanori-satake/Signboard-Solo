@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth, parentDirName,
+  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth, parentDirName, mergeOrder,
 } = require('../src/model');
 
 test('extOf takes the last extension, lowercased', () => {
@@ -76,6 +76,19 @@ test('parentDirName takes the containing directory from a URI path', () => {
   assert.equal(parentDirName('/c:/work/project/README.md'), 'project');
   assert.equal(parentDirName('/file.ts'), '');
   assert.equal(parentDirName(''), '');
+});
+
+test('mergeOrder keeps a cancelled ghost in its old place', () => {
+  // Closing the 2nd of 4 tabs: the ghost stays 2nd, not one row lower.
+  assert.deepEqual(mergeOrder(['a', 'b', 'c', 'd'], ['a', 'c', 'd'], ['b']), ['a', 'b', 'c', 'd']);
+  // Closing the last tab: the ghost trails at the end.
+  assert.deepEqual(mergeOrder(['a', 'b', 'c'], ['a', 'b'], ['c']), ['a', 'b', 'c']);
+  // Closing the first tab: the ghost stays first.
+  assert.deepEqual(mergeOrder(['a', 'b', 'c'], ['b', 'c'], ['a']), ['a', 'b', 'c']);
+  // Two adjacent closes keep their relative order.
+  assert.deepEqual(mergeOrder(['a', 'b', 'c', 'd'], ['a', 'd'], ['b', 'c']), ['a', 'b', 'c', 'd']);
+  // No ghosts: plain tab order, including a newly opened tab.
+  assert.deepEqual(mergeOrder(['a', 'c'], ['a', 'b', 'c'], []), ['a', 'b', 'c']);
 });
 
 test('auto mode uses flap below 520px and LED at 520px and wider', () => {
