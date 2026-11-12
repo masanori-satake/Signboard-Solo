@@ -16,11 +16,11 @@ const SET_SIZE = 4;          // trains per screen (design memo E5)
 const SET_SWITCH_MS = 8000;  // screen switching interval
 const SCALE = 4;             // compose at 4x, sample every 4th pixel
 /* dot-unit geometry */
-const HEADER_D = 12;         // 出発案内 + clock
-const TICKER_D = 9;          // announcement line (about 2/3 of the old 13)
-const ROW_D = 12;            // one train row
+const HEADER_D = 11;         // 出発案内 + clock
+const TICKER_D = 8;          // announcement line
+const ROW_D = 10;            // one train row
 const PAD_D = 2;
-const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 71
+const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 61
 const H = H_DOTS * SCALE;
 /* Element sizes in compose px, two sets: at Explorer-section widths the
    wide set would leave the destination only a character or two, so the
@@ -29,15 +29,16 @@ const H = H_DOTS * SCALE;
    a blob, which is what the chip sizes guard against. */
 function geom() {
   /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
-     so the chip grows in English and the destination shifts right. */
+     so the chip grows in English and the destination shifts right.
+     Sizes fit the 10-dot row: fonts stay as large as the row allows. */
   if (COLS >= 84) {
     return LANG_JA
-      ? { chipW: 76, chipH: 36, chipFont: 30, chipBase: 35, destX: 88, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 }
-      : { chipW: 118, chipH: 36, chipFont: 30, chipBase: 35, destX: 130, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 };
+      ? { chipW: 76, chipH: 32, chipFont: 26, chipBase: 30, destX: 88, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 33 }
+      : { chipW: 118, chipH: 32, chipFont: 26, chipBase: 30, destX: 130, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 33 };
   }
   return LANG_JA
-    ? { chipW: 60, chipH: 36, chipFont: 26, chipBase: 33, destX: 68, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 }
-    : { chipW: 92, chipH: 36, chipFont: 26, chipBase: 33, destX: 102, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 };
+    ? { chipW: 60, chipH: 32, chipFont: 22, chipBase: 29, destX: 68, destFont: 26, timeFont: 22, statusFont: 19, statusW: 52, baseLine: 32 }
+    : { chipW: 92, chipH: 32, chipFont: 22, chipBase: 29, destX: 102, destFont: 26, timeFont: 22, statusFont: 19, statusW: 52, baseLine: 32 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
@@ -90,12 +91,13 @@ const sctx = samp.getContext('2d', { willReadFrequently: true });
 let pitch = 6, radius = 2;
 function layout() {
   const w = Math.max(160, canvas.clientWidth || document.body.clientWidth - 16);
-  COLS = Math.max(64, Math.min(150, Math.round(w / 5)));
+  /* Finer grain: more, smaller dots across the same width. */
+  COLS = Math.max(64, Math.min(190, Math.round(w / 4)));
   W = COLS * SCALE;
   if (compose.width !== W) compose.width = W;
   if (samp.width !== COLS) { samp.width = COLS; samp.height = H_DOTS; }
   pitch = w / COLS;
-  radius = pitch * 0.33;
+  radius = pitch * 0.31;
   canvas.width = Math.round(w);
   canvas.height = Math.round(pitch * H_DOTS);
   base.width = canvas.width; base.height = canvas.height;
@@ -170,10 +172,10 @@ function composeScene(now) {
   /* ticker, directly under the header so it is never cut off */
   const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 28px ' + FONT;
+  cctx.font = 'bold 24px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
   if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, tickerY + 31);
+  cctx.fillText(tickerText, tickerOffset, tickerY + 27);
   tickerOffset -= 2;
   if (tickerOffset < -tw) {
     tickerOffset = null;
@@ -205,7 +207,7 @@ function composeScene(now) {
     const timeX = timeEnd - timeW;
     cctx.fillStyle = color;
     cctx.beginPath();
-    cctx.roundRect(2, y0 + 6, g.chipW, g.chipH, 8);
+    cctx.roundRect(2, y0 + 4, g.chipW, g.chipH, 8);
     cctx.fill();
     cctx.fillStyle = '#ffffff';
     /* Shrink the chip label until it fits (mainly for English words). */

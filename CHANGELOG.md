@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.4.1] - 2026-11-12
+
+- LED board refinement: the dot grain is finer (more, smaller dots across the same width — the pitch went from about 5px to about 4px and the dots themselves are slightly smaller), and the whole board is shorter: train rows are 10 dots tall instead of 12, the header 11 instead of 12, and the announcement band 8 instead of 9, with fonts kept as large as the slimmer rows allow.
+- LED盤面の調整。ドットの粒を細かくした（同じ幅により小さなドットを多く並べる：間隔は約5px→約4px、ドット自体も少し小さく）。あわせて盤面全体を低くした：列車行は12ドット→10ドット、ヘッダーは12→11、案内帯は9→8。文字は細くなった行に収まる範囲で最大の大きさを保った。
+
 ## [1.4.0] - 2026-11-12
 
 - The LED board now follows the VS Code display language, like the flap board always did: in English environments the header reads DEPARTURES, train types are LTD EXP / RAPID / LOCAL / ALL-STOPS, statuses read DELAYED / CANCELLED / ARRIVED, and the announcement ticker and line greeting are in English (“Thank you for riding the ○○ Line today”, “… will arrive shortly”, “… has been cancelled”). English type chips are wider and labels shrink to fit; English status words reserve their measured width so they never overrun the time. The README's English section no longer mixes in Japanese status words.
