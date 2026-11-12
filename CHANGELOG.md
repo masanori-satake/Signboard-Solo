@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.7.0] - 2026-11-12
+
+- Rebuilt the LED board's proportions on the pre-implementation prototype mock, which rendered far more legibly: glyphs there had about 11 dots each, while the shipped board had squeezed them to 6–7.5 dots over successive "lower and finer" adjustments. Rows are 12 dots again (header 12, ticker 11) with fonts at roughly 10–11 dots per glyph, body text returns to regular weight (bold strokes fuse at dot resolution), dots are fuller (radius ratio 0.36, the mock's proportion), and the train type is coloured text in the mock's bright colours instead of white text on a filled chip — the chip was the worst-melting element, since every dot cell mixed the label and chip colours. The cost is the one the mock accepted: fewer trains fit on one screen, and the board pages like the mock did.
+- LED 盤面の比率を、実装前のプロトタイプ・モックのものに戻した。モックでは文字が約11ドットで描かれていたが、製品版は「低く・細かく」の調整を重ねるうちに6〜7.5ドットまで潰れていた。行を12ドット（見出し12、テロップ11）に戻し、フォントを1文字あたり約10〜11ドットにし、本文を通常ウェイトに戻し（太字はドット解像度で線が融合する）、ドット半径比をモックの比率 0.36 に戻した。種別は、色チップの上に白文字を載せる方式（セルごとに文字色とチップ色が混ざり、最も潰れていた箇所）をやめ、モックと同じ明るい色の文字そのもので表示する。代償はモックが受け入れていた通りで、1画面に入る本数は減り、モック同様にページ切替になる。
+
 ## [1.6.0] - 2026-11-12
 
 - Improved LED legibility without changing the board's look: the scene is now composed at double resolution and supersampled (each dot's coverage is estimated from 8×8 source pixels instead of 4×4), sampled dot colours are snapped to the scene palette so mixed edge colours — the main cause of melted glyphs, above all the white type-chip labels on their coloured chips — resolve to the majority colour, the lighting threshold rose (105) so neighbouring strokes stop fusing, dots shrank slightly relative to their pitch (radius ratio 0.27) for clearer separation, text sizes grew within the same dot bands (header, destination, type chips, time, ticker), and destinations gained a touch of letter spacing.
