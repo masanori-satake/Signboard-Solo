@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.5.1] - 2026-11-12
+
+- Fixed the flap board's remarks plate showing the final word twice around a flip: when a tab closed, CANCELLED appeared instantly, then the plate flipped again and landed on CANCELLED a second time. A duplicate state update (the host pushes on both tab and tab-group events) was overwriting the plate with the final word while its flip timer was still running, orphaning the timer. The plate now tracks the word it is flipping toward and never stomps an in-flight flip; the word appears only when the flip lands.
+- フラップ盤面の備考プレートで、最終形が2回出る不具合を直した。タブを閉じると「欠航」がまず即座に表示され、そのあとプレートがまたパタパタして「欠航」に落ち着いていた。ホストがタブとタブグループの両イベントで状態を送るため、2通目の状態がフリップ中のプレートへ最終形を上書きし、止められなかったタイマーが孤児になって回り続けていた。プレートが「向かっている単語」を記録し、フリップ中は最終形で上書きしないようにしたので、単語はパタパタの着地時に初めて現れる。
+
 ## [1.5.0] - 2026-11-12
 
 - The LED board no longer shows a fixed four trains per screen: the number of rows now follows the view height (measured, like the flap board's paging), so trains stay on one screen whenever the space below is available and page only when they truly do not fit. The board also got finer and lower again: dot pitch about 3.2px (was about 4px) with slightly smaller dots, train rows 9 dots tall (was 10), header 10 (was 11), announcement band 7 (was 8).

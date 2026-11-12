@@ -112,7 +112,11 @@ function setTimeCells(container, ms, flapAll) {
     if (flapAll || cell.textContent !== ch) flapCell(cell, ch, SETS.digit, i * 115);
   });
 }
-/* Remarks: ONE wide plate per row, flipping word by word. */
+/* Remarks: ONE wide plate per row, flipping word by word.
+   dataset.text records the word the plate is showing OR flipping toward.
+   A duplicate state (the host pushes on both tab and tab-group events)
+   must never stomp an in-flight flip with the final word: that showed
+   the final word instantly, then the orphaned timer flipped it again. */
 const remarkTimers = new WeakMap();
 function setRemark(container, text, flap) {
   let plate = container.querySelector('.remark-plate');
@@ -124,9 +128,16 @@ function setRemark(container, text, flap) {
     plate.textContent = REMARK_WORDS[Math.floor(Math.random() * REMARK_WORDS.length)];
     plate.dataset.text = '';
   }
-  if (!flap || plate.dataset.text === text) { plate.textContent = text; plate.dataset.text = text; return; }
+  const timer = remarkTimers.get(plate);
+  if (plate.dataset.text === text) {
+    // Already showing this word, or already flipping toward it: let the
+    // flip land on its own; only repair the text when nothing is running.
+    if (!timer) plate.textContent = text;
+    return;
+  }
+  if (timer) { clearInterval(timer); remarkTimers.delete(plate); }
+  if (!flap) { plate.textContent = text; plate.dataset.text = text; return; }
   plate.dataset.text = text;
-  if (remarkTimers.has(plate)) { clearInterval(remarkTimers.get(plate)); remarkTimers.delete(plate); }
   const steps = 4 + Math.floor(Math.random() * 3);
   let s = 0;
   const iv = setInterval(() => {
