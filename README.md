@@ -1,6 +1,6 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.8.1-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.8.2-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
@@ -18,7 +18,7 @@
 
 It does nothing useful, on purpose. There is nothing to click and nothing to accomplish: the board just flaps and glows, quietly, whenever your files change, in the corner of your vision while you work. Because the rows are your own tabs, the board never repeats itself.
 
-Current version: **v1.8.1**
+Current version: **v1.8.2**
 
 ---
 
@@ -94,7 +94,7 @@ For VSCodium, Gitpod, Eclipse Theia, or environments configured with Open VSX:
 #### Method 3: Install from VSIX Package File (Offline / Manual)
 
 1. Go to the [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) page.
-2. Download the `.vsix` file (e.g., `signboard-solo-1.8.1.vsix`) under Assets.
+2. Download the `.vsix` file (e.g., `signboard-solo-1.8.2.vsix`) under Assets.
 3. In VS Code Extensions view (`Ctrl+Shift+X`), click the **"..." (Views and More Actions)** icon at the top right, select **Install from VSIX...**, and choose the downloaded file.
 
 ---
@@ -199,7 +199,7 @@ npm run update-version <X.Y.Z>
 
 実用性はありません。それが目的です。クリックするものも、達成するものもなく、ファイルが変わるたびに盤面が静かにパタパタ／発光するだけです。行の中身は自分のタブなので、盤面が同じ状態を繰り返すことはまずありません。
 
-現在のバージョン: **v1.8.1**
+現在のバージョン: **v1.8.2**
 
 ---
 
@@ -277,7 +277,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 #### 方法 3: VSIX パッケージファイルからのインストール（オフライン環境等）
 
 1. 本リポジトリの [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) ページにアクセスします。
-2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.8.1.vsix`）をダウンロードします。
+2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.8.2.vsix`）をダウンロードします。
 3. VS Code の拡張機能ビュー（`Ctrl+Shift+X` / `Cmd+Shift+X`）を開き、右上の **「...」（その他の操作）アイコン** をクリックして **「VSIX からのインストール... (Install from VSIX...)」** を選択し、ダウンロードしたファイルを選んでください。
 
 ---

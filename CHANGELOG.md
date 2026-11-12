@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.8.2] - 2026-11-13
+
+- Flap board: the time column header is now 到着時刻 / ARRIVAL (was 最終更新 / UPDATED) — this is an arrivals board. Also fixed the header labels disagreeing with the rows at panel widths of roughly 380–540px: the one-line row needs 539px, so below that the wide header stayed while the rows' time and remarks wrapped onto a second line, out from under their labels. The wide tier now starts at 540px, and in the two-line tiers (narrow / mini) all three column labels are hidden, as the rows no longer sit under them; the flight count stays visible.
+- フラップ盤面：時刻の列見出しを「最終更新」から「到着時刻」（英語は ARRIVAL）に変更——到着案内板なので。あわせて、パネル幅およそ380〜540pxで列ラベルと行の表示が一致しない問題を修正。1行レイアウトの行には539px必要なため、その幅未満では見出しだけ広い配置のまま、行の時刻と備考が2段目に折り返してラベルの下から外れていた。広いティアの開始を540pxに上げ、2段組みのティア（narrow / mini）では列ラベル3つをすべて隠すようにした（行がラベルの下に並ばないため）。便数の表示は残る。
+
 ## [1.8.1] - 2026-11-12
 
 - Fixed the LED board showing no trains: the rows were built into a cloned node and wiped. The glow layer is a deep clone of the text layer, so the document held two elements with the rows container's id, and the row builder — which looked the container up by id — wrote into the glow layer's clone, which the next glow sync then replaced. The header and ticker were unaffected because they were referenced directly. The row and ticker containers are now held as direct references, never looked up by id. Verified with a DOM-level test that feeds a state message to the renderer and checks the rows land in the text layer.

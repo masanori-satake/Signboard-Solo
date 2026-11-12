@@ -17,7 +17,7 @@ function setLocale(lang) {
     : { ontime: 'ON TIME', arrived: 'ARRIVED', delayed: 'DELAYED', cancelled: 'CANCELLED' };
   REMARK_WORDS = Object.values(REMARKS);
   document.getElementById('colName').textContent = LANG_JA ? '便名' : 'FLIGHT NAME';
-  document.getElementById('colTime').textContent = LANG_JA ? '最終更新' : 'UPDATED';
+  document.getElementById('colTime').textContent = LANG_JA ? '到着時刻' : 'ARRIVAL';
   document.getElementById('colRemark').textContent = LANG_JA ? '備考' : 'REMARKS';
 }
 setLocale('ja');
@@ -175,7 +175,12 @@ let tier = 'wide';
 
 function computeTier() {
   const w = window.innerWidth;
-  tier = w >= 380 ? 'wide' : w >= 240 ? 'narrow' : 'mini';
+  /* Wide means the one-line row actually fits: logo 27 + name field
+     270 + meta 198 + gaps = 515px, plus the board's 24px of padding.
+     Below that the row's meta wraps onto a second line while the
+     header labels stay in their wide positions — the two stop
+     matching — so the two-line grid tier takes over instead. */
+  tier = w >= 540 ? 'wide' : w >= 240 ? 'narrow' : 'mini';
   boardEl.dataset.tier = tier;
 }
 let measuredRowH = 0;

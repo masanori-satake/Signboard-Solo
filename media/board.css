@@ -28,6 +28,10 @@ body {
 .board[data-tier="wide"] .cols .c-name { flex: none; width: 270px; }
 .board[data-tier="wide"] .cells.name { width: 270px; }
 .cols .c-rem { width: 112px; }
+/* Two-line tiers: the rows no longer sit under the column labels, so
+   all three labels hide (the flight count stays, at the right end). */
+.board[data-tier="narrow"] .cols .c-name,
+.board[data-tier="mini"] .cols .c-name,
 .board[data-tier="narrow"] .cols .c-meta,
 .board[data-tier="mini"] .cols .c-meta { display: none; }
 .board[data-tier="narrow"] .cols .c-rem,
