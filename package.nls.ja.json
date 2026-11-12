@@ -1,1 +1,14 @@
-{"config.mode.auto":"幅による自動切替（520px未満は flap、520px以上は LED）","config.mode.description":"表示モード: flap（空港のフラップ式到着案内）/ led（駅のLED発車標）。auto は幅で切り替わり、520px未満は flap、520px以上は LED です。","config.mode.flap":"空港のフラップ式到着案内板","config.mode.led":"駅のLEDドットマトリクス発車標","config.title":"Signboard-Solo","extension.description":"開いているタブを空港の到着案内板（パタパタ）、または駅のLED発車標で表示します。実用性ゼロの、眺めるための拡張です。","view.name":"Signboard","command.showLed.title":"LED表示に切り替え","command.showFlap.title":"フラップ表示に切り替え"}
+{
+"config.mode.auto": "幅による自動切替（520px未満は flap、520px以上は LED）",
+"config.mode.description": "表示モード: flap（空港のフラップ式到着案内）/ led（駅のLED発車標）。auto は幅で切り替わり、520px未満は flap、520px以上は LED です。",
+"config.mode.flap": "空港のフラップ式到着案内板",
+"config.mode.led": "駅のLEDドットマトリクス発車標",
+"config.title": "Signboard-Solo",
+"extension.description": "開いているタブを空港の到着案内板（パタパタ）、または駅のLED発車標で表示します。実用性ゼロの、眺めるための拡張です。",
+"view.name": "Signboard",
+"command.showLed.title": "LED表示に切り替え",
+"command.showFlap.title": "フラップ表示に切り替え",
+"config.ledPitch.description": "LED盤面のドット間隔（px、マスク方式）。大きいほどドットが粗くなります。",
+"config.ledHole.description": "LED盤面の穴の大きさ（ドット間隔に対する％）。大きいほど文字が見える割合が増えます。",
+"config.ledGlow.description": "LED盤面の文字の後ろに、柔らかなにじみ（グロー）を付けます。"
+}

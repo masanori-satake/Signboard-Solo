@@ -1,60 +1,35 @@
 'use strict';
-/* Signboard-Solo station LED board renderer (webview).
-   Same rows as the flap board, drawn as a dot-matrix departure board:
-   text is composed small on an offscreen canvas and sampled into dots,
-   so kanji become dot glyphs as-is. The unlit dot grid is pre-rendered
-   once; each frame only draws the lit dots, batched by colour.
+/* Signboard-Solo station LED board renderer (webview) — mask method.
+   Same rows as the flap board, shown as a station LED departure board
+   without ever computing a dot: the board is ordinary DOM text, and a
+   static perforated mask (CSS radial-gradient holes on a dot pitch)
+   lies over it, so the letters show only through the holes and read
+   as lit LEDs. A blurred copy of the text sits underneath as the
+   light bleed. Because the glyphs are real text they cannot thin out
+   or drop strokes the way the earlier sampling renderers' dots did,
+   and a frame costs no per-dot work at all — the ticker is a plain
+   transform, the delayed blink a CSS animation.
 
-   Layout is defined in DOT units (1 dot = SCALE compose px) so elements
-   keep their proportions at any width; the dot column count adapts to
-   the view width. The announcement ticker sits directly under the
-   header: in a short Explorer section the bottom of the board is cut
-   off, and the announcements are the LED mode's main act. */
+   Dot parameters come from the signboard.ledPitch / ledHole /
+   ledGlow settings; their defaults are the approved prototype's
+   initial values (pitch 5px, hole 38%, glow on). Everything else —
+   live rows from the host, statuses, the line-name greeting,
+   announcements, screen switching, auto-mode width reporting — is
+   the product's own behaviour, unchanged. */
 const vscodeApi = acquireVsCodeApi();
+const CFG = Object.assign({ pitch: 5, hole: 38, glow: true }, window.__SB_LED || {});
 
 const SET_SWITCH_MS = 8000;  // screen switching interval
-const SCALE = 4;             // compose at 4x, sample every 4th pixel
-/* dot-unit geometry */
-const HEADER_D = 10;         // 出発案内 + clock
-const TICKER_D = 7;          // announcement line
-const ROW_D = 9;             // one train row
-const PAD_D = 2;
-/* Trains per screen is NOT fixed: it follows the view height (measured
-   in layout), so the board pages only when the trains truly do not fit
-   — the same rule the flap board uses. */
-let setSize = 4;
-function rowsShown() { return Math.max(1, Math.min(setSize, rows.length || setSize)); }
-function boardDots() { return HEADER_D + TICKER_D + rowsShown() * ROW_D + PAD_D; }
-/* Element sizes in compose px, two sets: at Explorer-section widths the
-   wide set would leave the destination only a character or two, so the
-   narrow set shrinks the chip, time and status zones first. The chip is
-   kept as large as the row allows: two kanji in too few dots melt into
-   a blob, which is what the chip sizes guard against. */
-function geom() {
-  /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
-     so the chip grows in English and the destination shifts right.
-     Sizes fit the 9-dot row: fonts stay as large as the row allows. */
-  if (COLS >= 72) {
-    return LANG_JA
-      ? { chipW: 76, chipH: 28, chipFont: 24, chipBase: 27, destX: 88, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 }
-      : { chipW: 118, chipH: 28, chipFont: 24, chipBase: 27, destX: 130, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 };
-  }
-  return LANG_JA
-    ? { chipW: 60, chipH: 28, chipFont: 20, chipBase: 26, destX: 68, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 }
-    : { chipW: 92, chipH: 28, chipFont: 20, chipBase: 26, destX: 102, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 };
-}
 
-let COLS = 76;               // dots across, adapted in layout()
-let W = COLS * SCALE;        // compose width in px
-
-/* [Japanese label, English label, colour] — the board follows the
-   VS Code display language, like the flap board does. */
+/* [Japanese label, English label, colour class] in the palette of the
+   mock and the mask prototype — the board follows the VS Code display
+   language, like the flap board does. */
 const TYPE_BY_EXT = {
-  ts: ['特急', 'LTD EXP', '#e03131'], go: ['特急', 'LTD EXP', '#e03131'],
-  js: ['快速', 'RAPID', '#f08c00'], css: ['快速', 'RAPID', '#f08c00'], rs: ['快速', 'RAPID', '#f08c00'],
-  py: ['普通', 'LOCAL', '#2f9e44'], json: ['普通', 'LOCAL', '#2f9e44'], html: ['普通', 'LOCAL', '#2f9e44'],
+  ts: ['特急', 'LTD EXP', 'c-red'], go: ['特急', 'LTD EXP', 'c-red'],
+  js: ['快速', 'RAPID', 'c-orange'], css: ['快速', 'RAPID', 'c-orange'], rs: ['快速', 'RAPID', 'c-orange'],
+  py: ['普通', 'LOCAL', 'c-green'], json: ['普通', 'LOCAL', 'c-green'], html: ['普通', 'LOCAL', 'c-green'],
 };
-const TYPE_DEFAULT = ['各停', 'ALL-STOPS', '#1971c2'];
+const TYPE_DEFAULT = ['各停', 'ALL-STOPS', 'c-blue'];
 let LANG_JA = false;
 /* The line name comes from the host: the parent directory of the first
    file tab. The greeting thanks riders of that line, like a real station
@@ -70,67 +45,25 @@ function defaultTicker() {
     ? '本日も ' + lineName + '線 をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。'
     : '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
 }
-const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
 
 function stripExt(n) { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(0, i) : n; }
 function destName(name) { return stripExt(name).toUpperCase(); }
-function hhmm(ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-function clockNow() { const d = new Date(); return [d.getHours(), d.getMinutes()].map((v) => String(v).padStart(2, '0')).join(':'); }
+function pad2(v) { return String(v).padStart(2, '0'); }
+function hhmm(ms) { const d = new Date(ms); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function clockNow() { const d = new Date(); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()); }
 
-const canvas = document.getElementById('led');
-const ctx = canvas.getContext('2d');
-const compose = document.createElement('canvas');
-const cctx = compose.getContext('2d', { willReadFrequently: true });
-const base = document.createElement('canvas');
-/* Coverage sampler: the composed scene is downscaled into a COLS x boardDots()
-   canvas (browser filtering averages each dot's block), so a dot lights
-   by how much of it the glyph actually covers — strokes stop dropping
-   out the way they did with single-centre-pixel sampling. */
-const samp = document.createElement('canvas');
-const sctx = samp.getContext('2d', { willReadFrequently: true });
+const board = document.getElementById('board');
+const textLayer = document.getElementById('textLayer');
+const glowLayer = document.getElementById('glowLayer');
+const pagesEl = document.getElementById('pages');
 
-let pitch = 6, radius = 2;
-function layout() {
-  const w = Math.max(160, canvas.clientWidth || document.body.clientWidth - 16);
-  /* Grain: about 4.3px per dot. At sidebar widths the finer 3.2px
-     grain made glyphs read thin; 4.3px is the size the dots reached
-     on a wide panel (where the 230-column cap used to take over), and
-     that fuller look is now the norm at every width. */
-  COLS = Math.max(64, Math.min(230, Math.round(w / 4.3)));
-  W = COLS * SCALE;
-  if (compose.width !== W) compose.width = W;
-  pitch = w / COLS;
-  radius = pitch * 0.36;
-  /* Rows per screen follow the view height: the board grows downward
-     into the space the view offers and pages only past that. */
-  const availDots = Math.floor((window.innerHeight - 16) / pitch);
-  const fit = Math.floor((availDots - HEADER_D - TICKER_D - PAD_D) / ROW_D);
-  setSize = Math.max(1, Math.min(24, fit));
-  if (currentSet >= sets()) currentSet = sets() - 1;
-  const hDots = boardDots();
-  if (compose.height !== hDots * SCALE) compose.height = hDots * SCALE;
-  if (samp.width !== COLS || samp.height !== hDots) { samp.width = COLS; samp.height = hDots; }
-  canvas.width = Math.round(w);
-  canvas.height = Math.round(pitch * hDots);
-  base.width = canvas.width; base.height = canvas.height;
-  const b = base.getContext('2d');
-  b.fillStyle = '#060607'; b.fillRect(0, 0, base.width, base.height);
-  b.fillStyle = '#1b1116';
-  for (let y = 0; y < hDots; y++) for (let x = 0; x < COLS; x++) {
-    b.beginPath(); b.arc((x + 0.5) * pitch, (y + 0.5) * pitch, radius, 0, 7); b.fill();
-  }
-}
-
-function fitText(text, maxPx) {
-  if (cctx.measureText(text).width <= maxPx) return text;
-  const chars = [...text];
-  while (chars.length > 2) {
-    const head = Math.ceil(chars.length * 0.55), tail = Math.floor(chars.length * 0.45);
-    const cand = chars.slice(0, head).join('') + '…' + chars.slice(chars.length - tail).join('');
-    if (cctx.measureText(cand).width <= maxPx) return cand;
-    chars.splice(Math.floor(chars.length / 2), 1);
-  }
-  return chars.join('');
+function applyParams() {
+  const pitch = Math.min(12, Math.max(3, Number(CFG.pitch) || 5));
+  const holePct = Math.min(48, Math.max(25, Number(CFG.hole) || 38));
+  board.style.setProperty('--pitch', pitch + 'px');
+  board.style.setProperty('--hole', (pitch * holePct / 100).toFixed(2) + 'px');
+  board.style.setProperty('--feather', Math.max(0.3, pitch * 0.12).toFixed(2) + 'px');
+  glowLayer.style.display = CFG.glow ? '' : 'none';
 }
 
 let rows = [];
@@ -138,184 +71,120 @@ let prevByKey = new Map();
 let currentSet = 0;
 let lastSetChange = Date.now();
 let lastEventAt = 0;
+let setSize = 4;
 let tickerText = defaultTicker();
-let tickerOffset = null; // null = start at right edge
-let announceUntilDone = false;
+let tickerMode = 'loop';   // 'loop' = greeting scroll, 'once' = announcement pass
+let tickerOffset = 0;
 
 function sets() { return Math.max(1, Math.ceil(rows.length / setSize)); }
 function jumpToKey(key) {
   const idx = rows.findIndex((r) => r.key === key);
   if (idx < 0) return;
   const s = Math.floor(idx / setSize);
-  if (s !== currentSet) { currentSet = s; lastSetChange = Date.now(); }
+  if (s !== currentSet) { currentSet = s; lastSetChange = Date.now(); buildRows(); }
 }
 function announce(text) {
   tickerText = text;
-  tickerOffset = null;
-  announceUntilDone = true;
+  tickerMode = 'once';
+  tickerOffset = null; // start off the right edge, measured on next tick
+  renderTickerText();
 }
-function statusOf(r, blinkOn) {
-  if (r.status === 'delayed') return blinkOn ? [LANG_JA ? '遅延' : 'DELAYED', '#ff3b30'] : ['', ''];
-  if (r.status === 'cancelled') return [LANG_JA ? '運休' : 'CANCELLED', '#ff3b30'];
-  if (r.status === 'arrived') return [LANG_JA ? '到着' : 'ARRIVED', '#39e75f'];
+function statusOf(r) {
+  if (r.status === 'delayed') return [LANG_JA ? '遅延' : 'DELAYED', 'st-delay blink'];
+  if (r.status === 'cancelled') return [LANG_JA ? '運休' : 'CANCELLED', 'st-delay'];
+  if (r.status === 'arrived') return [LANG_JA ? '到着' : 'ARRIVED', 'st-arrived'];
+  if (r.active) return [LANG_JA ? '次発' : 'NEXT', 'st-next'];
   return ['', ''];
 }
 
-function composeScene(now) {
-  cctx.clearRect(0, 0, W, boardDots() * SCALE);
-  cctx.textBaseline = 'alphabetic';
-  /* header */
-  cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
-  const ck = clockNow();
-  const ckW = cctx.measureText(ck).width;
-  cctx.fillStyle = '#ffb03a';
-  const headText = LANG_JA ? '出発案内' : 'DEPARTURES';
-  let headFont = LANG_JA ? 36 : 28;
-  cctx.font = 'bold ' + headFont + 'px ' + FONT;
-  while (headFont > 16 && cctx.measureText(headText).width > W - ckW - 14) {
-    headFont -= 2;
-    cctx.font = 'bold ' + headFont + 'px ' + FONT;
-  }
-  cctx.fillText(headText, 2, 37);
-  cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
-  cctx.fillText(ck, W - ckW - 2, 37);
-  /* ticker, directly under the header so it is never cut off */
-  const tickerY = HEADER_D * SCALE;
-  cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 22px ' + FONT;
-  const tw = cctx.measureText(tickerText).width;
-  if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, tickerY + 24);
-  tickerOffset -= 2;
-  if (tickerOffset < -tw) {
-    tickerOffset = null;
-    if (announceUntilDone) { tickerText = defaultTicker(); announceUntilDone = false; }
-  }
-  /* train rows */
-  const blinkOn = Math.floor(now / 530) % 2 === 0;
-  const rowsY = (HEADER_D + TICKER_D) * SCALE;
-  const slice = rows.slice(currentSet * setSize, currentSet * setSize + setSize);
-  const g = geom();
-  slice.forEach((r, i) => {
-    const y0 = rowsY + i * ROW_D * SCALE;
-    const baseLine = y0 + g.baseLine;
-    const [labelJa, labelEn, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
-    const label = LANG_JA ? labelJa : labelEn;
-    const [st, sc] = statusOf(r, blinkOn);
-    /* layout: [chip][destination ...][time][status?] */
-    cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
-    const t = hhmm(r.mtime);
-    const timeW = cctx.measureText(t).width;
-    /* English status words are wider than the reserved zone; reserve
-       what the word actually measures so it never overruns the time. */
-    let statusW = g.statusW;
-    if (st) {
-      cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
-      statusW = Math.max(g.statusW, cctx.measureText(st).width + 6);
-    }
-    const timeEnd = st ? W - statusW - 4 : W - 2;
-    const timeX = timeEnd - timeW;
-    cctx.fillStyle = color;
-    cctx.beginPath();
-    cctx.roundRect(2, y0 + 4, g.chipW, g.chipH, 8);
-    cctx.fill();
-    cctx.fillStyle = '#ffffff';
-    /* Shrink the chip label until it fits (mainly for English words). */
-    let chipFont = g.chipFont;
-    cctx.font = 'bold ' + chipFont + 'px ' + FONT;
-    while (chipFont > 12 && cctx.measureText(label).width > g.chipW - 8) {
-      chipFont -= 2;
-      cctx.font = 'bold ' + chipFont + 'px ' + FONT;
-    }
-    const lw = cctx.measureText(label).width;
-    cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + g.chipBase);
-    cctx.fillStyle = '#ffb03a';
-    cctx.font = 'bold ' + g.destFont + 'px ' + FONT;
-    cctx.fillText(fitText(destName(r.name), timeX - g.destX - 8), g.destX, baseLine);
-    cctx.fillStyle = '#39e75f';
-    cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
-    cctx.fillText(t, timeX, baseLine);
-    if (st) {
-      cctx.fillStyle = sc;
-      cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
-      cctx.fillText(st, W - 2 - cctx.measureText(st).width, baseLine);
-    }
-  });
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
 }
 
-function draw(now) {
-  /* Never sample with geometry the canvases were not laid out for:
-     a mismatch squeezes (or stretches) the whole scene vertically. */
-  if (compose.height !== boardDots() * SCALE || samp.height !== boardDots()) layout();
-  composeScene(now);
-  const hDots = boardDots();
-  sctx.clearRect(0, 0, COLS, hDots);
-  sctx.imageSmoothingEnabled = true;
-  sctx.imageSmoothingQuality = 'high';
-  sctx.drawImage(compose, 0, 0, COLS, hDots);
-  const img = sctx.getImageData(0, 0, COLS, hDots).data;
-  ctx.drawImage(base, 0, 0);
-  /* Dots are binary, like a real LED board: coverage past the threshold
-     lights the dot at full brightness, anything less stays dark. The
-     earlier half-brightness pass for partial coverage read as fuzz and
-     made small glyphs harder to read, so it is gone. The threshold sits
-     at about 14% coverage — the prototype mock's rule (it lit any pixel
-     the glyph touched): the previous 33% threshold dropped every
-     partially covered dot along a stroke, which left glyphs perforated
-     and lace-like on the real board. A final pass fills a one-dot gap
-     when the dots on both sides share a colour: that is a sampling
-     notch in a stroke, not a real gap in the glyph. */
-  const lit = new Uint8Array(COLS * hDots);
-  const dotKey = new Int32Array(COLS * hDots).fill(-1);
-  for (let dy = 0; dy < hDots; dy++) {
-    for (let dx = 0; dx < COLS; dx++) {
-      const px = dx + dy * COLS;
-      if (img[px * 4 + 3] <= 36) continue;
-      lit[px] = 1;
-      dotKey[px] = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
-    }
+/* Build the whole text layer (header + current screen of rows +
+   ticker), then mirror it into the glow layer. */
+function buildAll() {
+  textLayer.replaceChildren();
+  const head = el('div', 'head');
+  head.appendChild(el('span', 'ttl', LANG_JA ? '出発案内' : 'DEPARTURES'));
+  head.appendChild(el('span', 'clk', clockNow()));
+  textLayer.appendChild(head);
+  const rowsBox = el('div', 'rows');
+  rowsBox.id = 'rowsBox';
+  textLayer.appendChild(rowsBox);
+  const ticker = el('div', 'ticker');
+  ticker.id = 'ticker';
+  ticker.appendChild(el('span', 'scroll'));
+  textLayer.appendChild(ticker);
+  buildRows();
+  renderTickerText();
+}
+
+function buildRows() {
+  const rowsBox = document.getElementById('rowsBox');
+  if (!rowsBox) return;
+  rowsBox.replaceChildren();
+  const slice = rows.slice(currentSet * setSize, currentSet * setSize + setSize);
+  for (const r of slice) {
+    const [labelJa, labelEn, cls] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
+    const row = el('div', 'row');
+    row.appendChild(el('span', 'type ' + cls, LANG_JA ? labelJa : labelEn));
+    const dest = el('span', 'dest', destName(r.name));
+    if (r.status === 'cancelled') dest.style.color = '#777';
+    row.appendChild(dest);
+    row.appendChild(el('span', 'time', hhmm(r.mtime)));
+    const [st, stCls] = statusOf(r);
+    row.appendChild(el('span', 'st ' + stCls, st));
+    rowsBox.appendChild(row);
   }
-  for (let dy = 1; dy < hDots - 1; dy++) {
-    for (let dx = 1; dx < COLS - 1; dx++) {
-      const px = dx + dy * COLS;
-      if (lit[px]) continue;
-      const horizontal = dotKey[px - 1] >= 0 && dotKey[px - 1] === dotKey[px + 1];
-      const vertical = dotKey[px - COLS] >= 0 && dotKey[px - COLS] === dotKey[px + COLS];
-      if (horizontal || vertical) {
-        lit[px] = 1;
-        dotKey[px] = horizontal ? dotKey[px - 1] : dotKey[px - COLS];
-      }
-    }
-  }
-  const byColor = new Map();
-  for (let dy = 0; dy < hDots; dy++) {
-    for (let dx = 0; dx < COLS; dx++) {
-      const px = dx + dy * COLS;
-      if (!lit[px]) continue;
-      const key = dotKey[px];
-      if (!byColor.has(key)) byColor.set(key, []);
-      byColor.get(key).push(dx, dy);
-    }
-  }
-  for (const [key, pts] of byColor) {
-    ctx.fillStyle = 'rgb(' + (key >> 16) + ',' + ((key >> 8) & 255) + ',' + (key & 255) + ')';
-    ctx.beginPath();
-    for (let i = 0; i < pts.length; i += 2) {
-      ctx.moveTo((pts[i] + 0.5) * pitch + radius, (pts[i + 1] + 0.5) * pitch);
-      ctx.arc((pts[i] + 0.5) * pitch, (pts[i + 1] + 0.5) * pitch, radius, 0, 7);
-    }
-    ctx.fill();
-  }
+  pagesEl.replaceChildren();
   if (sets() > 1) {
     for (let s = 0; s < sets(); s++) {
-      ctx.beginPath();
-      ctx.arc(canvas.width - 10 - (sets() - 1 - s) * 12, canvas.height - 8, s === currentSet ? 3.4 : 2.2, 0, 7);
-      ctx.fillStyle = s === currentSet ? '#ffb03a' : '#3a3a40';
-      ctx.fill();
+      const dot = el('i', s === currentSet ? 'on' : '');
+      pagesEl.appendChild(dot);
     }
   }
+  syncGlow();
+}
+
+function syncGlow() {
+  glowLayer.replaceChildren(...[...textLayer.childNodes].map((n) => n.cloneNode(true)));
+}
+
+function scrollEls() { return board.querySelectorAll('.ticker .scroll'); }
+function renderTickerText() {
+  const text = tickerMode === 'loop' ? (tickerText + '　　　').repeat(2) : tickerText + '　　　';
+  scrollEls().forEach((s) => { s.textContent = text; });
+  if (tickerMode === 'loop') tickerOffset = 0;
+}
+
+/* Trains per screen follows the view height, measured from a real
+   row: the board pages only when the trains truly do not fit — the
+   same rule the flap board uses. */
+function measureSetSize() {
+  const row = textLayer.querySelector('.row');
+  const head = textLayer.querySelector('.head');
+  const ticker = textLayer.querySelector('.ticker');
+  if (!row || !head || !ticker) return;
+  const rowH = row.offsetHeight;
+  if (rowH <= 0) return;
+  const fontPx = parseFloat(getComputedStyle(board).fontSize) || 40;
+  const used = head.offsetHeight + ticker.offsetHeight + fontPx * 1.1; // layer padding + ticker margins
+  const fit = Math.floor((window.innerHeight - 16 - used) / rowH);
+  const next = Math.max(1, Math.min(24, fit));
+  if (next !== setSize) {
+    setSize = next;
+    if (currentSet >= sets()) currentSet = sets() - 1;
+    buildRows();
+  }
+}
+
+function tickClock() {
+  const t = clockNow();
+  board.querySelectorAll('.clk').forEach((c) => { c.textContent = t; });
 }
 
 setInterval(() => {
@@ -324,9 +193,33 @@ setInterval(() => {
   if (sets() > 1 && now - lastSetChange >= SET_SWITCH_MS && now - lastEventAt >= SET_SWITCH_MS) {
     currentSet = (currentSet + 1) % sets();
     lastSetChange = now;
+    buildRows();
   }
-  draw(now);
-}, 66);
+  /* ticker scroll: the text layer slides under the static mask */
+  const els = scrollEls();
+  if (els.length) {
+    /* Measure the text layer's copy: the glow layer may be hidden
+       (glow off), and a hidden element reports a width of 0. */
+    const main = textLayer.querySelector('.ticker .scroll');
+    const w = main ? main.scrollWidth : 0;
+    const box = document.getElementById('ticker');
+    if (tickerMode === 'loop') {
+      const half = w / 2;
+      tickerOffset -= 3;
+      if (half > 0 && tickerOffset <= -half) tickerOffset += half;
+    } else {
+      if (tickerOffset === null) tickerOffset = box ? box.clientWidth : 0;
+      tickerOffset -= 3;
+      if (w > 0 && tickerOffset < -w) {
+        tickerText = defaultTicker();
+        tickerMode = 'loop';
+        renderTickerText();
+      }
+    }
+    els.forEach((s) => { s.style.transform = 'translateX(' + tickerOffset + 'px)'; });
+  }
+}, 50);
+setInterval(() => { if (!document.hidden) tickClock(); }, 250);
 
 window.addEventListener('message', (ev) => {
   const msg = ev.data;
@@ -334,18 +227,16 @@ window.addEventListener('message', (ev) => {
   if (msg.type === 'state') {
     LANG_JA = String(msg.lang || '').toLowerCase().startsWith('ja');
     lineName = msg.line || '';
-    if (!announceUntilDone && tickerText !== defaultTicker()) {
-      // The line changed (a different first file): restart the greeting.
+    if (tickerMode === 'loop' && tickerText !== defaultTicker()) {
+      // The line changed (a different first file): restart the greeting
+      // (buildAll below re-renders the ticker text).
       tickerText = defaultTicker();
-      tickerOffset = null;
     }
     const before = prevByKey;
     rows = msg.rows || [];
-    /* Layout AFTER the rows land: the board height derives from the row
-       count, and laying out with the previous (or initial empty) rows
-       left the sampler geometry stale — the scene was squeezed into
-       the wrong dot height until the next resize. */
-    layout();
+    if (currentSet >= sets()) currentSet = sets() - 1;
+    buildAll();
+    measureSetSize();
     for (const r of rows) {
       const prev = before.get(r.key);
       if (prev && prev.status !== r.status && r.status === 'arrived') {
@@ -356,7 +247,6 @@ window.addEventListener('message', (ev) => {
         announce(LANG_JA ? destName(r.name) + ' は運休となりました' : destName(r.name) + ' has been cancelled.');
       }
     }
-    if (currentSet >= sets()) currentSet = sets() - 1;
     prevByKey = new Map(rows.map((r) => [r.key, r]));
   } else if (msg.type === 'event' && msg.key) {
     lastEventAt = Date.now();
@@ -374,9 +264,11 @@ window.addEventListener('resize', () => {
   if (now - resizeAt < 150) return;
   resizeAt = now;
   reportWidth();
-  layout();
+  measureSetSize();
 });
 
-layout();
+applyParams();
+buildAll();
+measureSetSize();
 reportWidth();
 vscodeApi.postMessage({ type: 'ready' });

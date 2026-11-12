@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.8.0] - 2026-11-12
+
+- The LED board was rebuilt on the mask method: the board is now ordinary text, and a static perforated mask (CSS holes on a dot pitch) lies over it, so letters show only through the holes and read as lit LEDs, with a blurred copy underneath as the light bleed. No dot sampling happens at all — the earlier renderers composed text and sampled it into dots, and their averaging kept thinning or dropping strokes at every size tried; real text under a mask cannot lose its shape. Layout and palette follow the approved mask prototype: coloured type words instead of filled chips, amber destinations, green times, a white clock with seconds, a green ticker along the bottom, and a NEXT marker on the active train. New settings `signboard.ledPitch` (dot pitch, default 5px), `signboard.ledHole` (hole size, default 38% of the pitch) and `signboard.ledGlow` (default on) expose the prototype's parameters for later adjustment. All behaviour is unchanged (live rows, delayed/cancelled/arrived statuses, the line-name greeting, announcements, height-fitted paging, Japanese/English labels).
+- LED 表示をマスク方式で作り直した。盤面は通常の文字レイヤーで、その上にドット間隔で穴の空いた静止マスクを被せ、文字が穴からだけ見えて LED の点灯のように読める方式。背後にはぼかした文字を敷いてにじみを出す。ドットのサンプリング自体を行わない——従来の描画は文字を描いてドット化する過程の平均化で、どのサイズでも線が痩せ・欠け続けていたが、本物の文字は形を失わない。レイアウトと配色は承認済みのマスク方式プロトタイプ準拠：チップではなく色付きの種別文字、行先は琥珀色、時刻は緑、時計は秒付きの白、最下段に緑のテロップ、アクティブな列車には「次発」。プロトタイプのパラメータを後から調整できるよう、設定 `signboard.ledPitch`（ドット間隔、既定 5px）、`signboard.ledHole`（穴の大きさ、既定は間隔の38%）、`signboard.ledGlow`（既定オン）を追加。動作面（ライブな行、遅延・運休・到着、路線名の挨拶、アナウンス、高さに合わせたページ送り、日英ラベル）は従来通り。
+
 ## [1.7.4] - 2026-11-12
 
 - Fixed the LED glyphs' perforated, lace-like look: the dot-lighting threshold dropped from 33% coverage (alpha 84) to about 14% (alpha 36), the prototype mock's rule — at 33%, every partially covered dot along a stroke went dark, so letters were full of holes. Dots also grew fuller (radius ratio 0.30 → 0.36, again the mock's proportion). Both changes were verified in a local simulation of the sampling pipeline before shipping: destinations, times, the header and the chip labels render as solid dot glyphs instead of perforated outlines. (The ticker, at roughly 5.5 dots per glyph, remains soft — that is its dot budget, and the bleed is accepted as part of the look.)

@@ -199,9 +199,11 @@ class BoardProvider {
       if (msg && msg.type === 'width') this.handleWidth(msg.width);
     });
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('signboard.mode') && this.view) {
-        // Swap the renderer (flap <-> LED) by rebuilding the page. Auto
-        // starts from flap; the new page immediately reports its width.
+      if (e.affectsConfiguration('signboard') && this.view) {
+        // Swap the renderer (flap <-> LED) by rebuilding the page; the
+        // LED mask parameters (ledPitch / ledHole / ledGlow) also take
+        // effect this way. Auto starts from flap; the new page
+        // immediately reports its width.
         this.autoRenderer = 'flap';
         this.view.webview.html = this.html(this.view.webview);
         this.lastSignature = '';
@@ -272,8 +274,21 @@ class BoardProvider {
     const autoScript = mode === 'auto'
       ? `<script nonce="${nonce}">window.__SB_AUTO = true;</script>\n`
       : '';
+    const cfg = vscode.workspace.getConfiguration('signboard');
+    const ledScript = led
+      ? `<script nonce="${nonce}">window.__SB_LED = ${JSON.stringify({
+        pitch: cfg.get('ledPitch', 5),
+        hole: cfg.get('ledHole', 38),
+        glow: cfg.get('ledGlow', true),
+      })};</script>\n`
+      : '';
     const body = led
-      ? '<canvas id="led"></canvas>'
+      ? `<div class="board" id="board">
+  <div class="layer glow" id="glowLayer" aria-hidden="true"></div>
+  <div class="layer" id="textLayer"></div>
+  <div class="mask"></div>
+  <div class="pages" id="pages"></div>
+</div>`
       : `<div class="board" id="board">
   <div class="board-head">
     <span class="title">ARRIVALS</span>
@@ -293,7 +308,7 @@ class BoardProvider {
 </head>
 <body>
 ${body}
-${autoScript}<script nonce="${nonce}" src="${js}"></script>
+${autoScript}${ledScript}<script nonce="${nonce}" src="${js}"></script>
 </body>
 </html>`;
   }

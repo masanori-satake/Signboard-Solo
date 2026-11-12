@@ -1,6 +1,6 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.7.4-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.8.0-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
@@ -18,7 +18,7 @@
 
 It does nothing useful, on purpose. There is nothing to click and nothing to accomplish: the board just flaps and glows, quietly, whenever your files change, in the corner of your vision while you work. Because the rows are your own tabs, the board never repeats itself.
 
-Current version: **v1.7.4**
+Current version: **v1.8.0**
 
 ---
 
@@ -94,7 +94,7 @@ For VSCodium, Gitpod, Eclipse Theia, or environments configured with Open VSX:
 #### Method 3: Install from VSIX Package File (Offline / Manual)
 
 1. Go to the [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) page.
-2. Download the `.vsix` file (e.g., `signboard-solo-1.7.4.vsix`) under Assets.
+2. Download the `.vsix` file (e.g., `signboard-solo-1.8.0.vsix`) under Assets.
 3. In VS Code Extensions view (`Ctrl+Shift+X`), click the **"..." (Views and More Actions)** icon at the top right, select **Install from VSIX...**, and choose the downloaded file.
 
 ---
@@ -138,6 +138,9 @@ Only the command for the mode you can switch *to* appears in the view title bar;
 | Setting | Default | Description |
 | :--- | :--- | :--- |
 | `signboard.mode` | `flap` | Display mode: `flap` (split-flap arrivals board), `led` (station LED departure board), or `auto` (flap below 520px, LED at 520px and wider) |
+| `signboard.ledPitch` | `5` | LED board dot pitch in px (mask method). Larger values make the dots coarser |
+| `signboard.ledHole` | `38` | LED board hole size, as a percentage of the dot pitch. Larger holes let more of each letter show |
+| `signboard.ledGlow` | `true` | Add a soft glow (light bleed) behind the LED board's letters |
 
 Settings can be changed via VS Code Settings (`Ctrl+,` / `Cmd+,`).
 
@@ -155,7 +158,7 @@ Settings can be changed via VS Code Settings (`Ctrl+,` / `Cmd+,`).
 <a id="en-privacy"></a>
 ### 🔒 Data Storage & Privacy
 
-All rendering happens locally. There is no telemetry, no cloud service, and no AI feature; your file names and tab state are **never** transmitted over any network. The board keeps nothing of its own — the only thing stored is the display mode you choose, in VS Code's standard settings (`signboard.mode`).
+All rendering happens locally. There is no telemetry, no cloud service, and no AI feature; your file names and tab state are **never** transmitted over any network. The board keeps nothing of its own — the only things stored are the display mode and LED dot parameters you choose, in VS Code's standard settings (`signboard.*`).
 
 ---
 
@@ -196,7 +199,7 @@ npm run update-version <X.Y.Z>
 
 実用性はありません。それが目的です。クリックするものも、達成するものもなく、ファイルが変わるたびに盤面が静かにパタパタ／発光するだけです。行の中身は自分のタブなので、盤面が同じ状態を繰り返すことはまずありません。
 
-現在のバージョン: **v1.7.4**
+現在のバージョン: **v1.8.0**
 
 ---
 
@@ -274,7 +277,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 #### 方法 3: VSIX パッケージファイルからのインストール（オフライン環境等）
 
 1. 本リポジトリの [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) ページにアクセスします。
-2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.7.4.vsix`）をダウンロードします。
+2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.8.0.vsix`）をダウンロードします。
 3. VS Code の拡張機能ビュー（`Ctrl+Shift+X` / `Cmd+Shift+X`）を開き、右上の **「...」（その他の操作）アイコン** をクリックして **「VSIX からのインストール... (Install from VSIX...)」** を選択し、ダウンロードしたファイルを選んでください。
 
 ---
@@ -318,6 +321,9 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 | 設定キー | 既定値 | 説明 |
 | :--- | :--- | :--- |
 | `signboard.mode` | `flap` | 表示モード： `flap`（空港の到着案内板）/ `led`（駅の発車標）/ `auto`（520px未満はフラップ、520px以上は LED） |
+| `signboard.ledPitch` | `5` | LED盤面のドット間隔（px、マスク方式）。大きいほどドットが粗くなります |
+| `signboard.ledHole` | `38` | LED盤面の穴の大きさ（ドット間隔に対する％）。大きいほど文字が見える割合が増えます |
+| `signboard.ledGlow` | `true` | LED盤面の文字の後ろに、柔らかなにじみ（グロー）を付けます |
 
 設定は VS Code の設定エディタ（`Ctrl+,` / `Cmd+,`）から変更できます。
 
@@ -335,7 +341,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 <a id="ja-privacy"></a>
 ### 🔒 データの保存について
 
-すべての描画処理はローカルで完結します。テレメトリ（利用状況送信）、クラウドサービス、AI 機能は一切使用しておらず、ファイル名やタブの状態がネットワーク経由で送信されることは**絶対にありません**。盤面自体が保持するデータはなく、保存されるのは選んだ表示モードだけで、VS Code の標準設定（`signboard.mode`）に記録されます。
+すべての描画処理はローカルで完結します。テレメトリ（利用状況送信）、クラウドサービス、AI 機能は一切使用しておらず、ファイル名やタブの状態がネットワーク経由で送信されることは**絶対にありません**。盤面自体が保持するデータはなく、保存されるのは選んだ表示モードと LED のドットパラメータだけで、VS Code の標準設定（`signboard.*`）に記録されます。
 
 ---
 
