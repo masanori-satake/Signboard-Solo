@@ -100,7 +100,7 @@ function layout() {
   W = COLS * SCALE;
   if (compose.width !== W) compose.width = W;
   pitch = w / COLS;
-  radius = pitch * 0.30;
+  radius = pitch * 0.36;
   /* Rows per screen follow the view height: the board grows downward
      into the space the view offers and pages only past that. */
   const availDots = Math.floor((window.innerHeight - 16) / pitch);
@@ -260,16 +260,19 @@ function draw(now) {
   /* Dots are binary, like a real LED board: coverage past the threshold
      lights the dot at full brightness, anything less stays dark. The
      earlier half-brightness pass for partial coverage read as fuzz and
-     made small glyphs harder to read, so it is gone. The threshold is
-     low enough to keep thin digit strokes, and a final pass fills a
-     one-dot gap when the dots on both sides share a colour: that is a
-     sampling notch in a stroke, not a real gap in the glyph. */
+     made small glyphs harder to read, so it is gone. The threshold sits
+     at about 14% coverage — the prototype mock's rule (it lit any pixel
+     the glyph touched): the previous 33% threshold dropped every
+     partially covered dot along a stroke, which left glyphs perforated
+     and lace-like on the real board. A final pass fills a one-dot gap
+     when the dots on both sides share a colour: that is a sampling
+     notch in a stroke, not a real gap in the glyph. */
   const lit = new Uint8Array(COLS * hDots);
   const dotKey = new Int32Array(COLS * hDots).fill(-1);
   for (let dy = 0; dy < hDots; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = dx + dy * COLS;
-      if (img[px * 4 + 3] <= 84) continue;
+      if (img[px * 4 + 3] <= 36) continue;
       lit[px] = 1;
       dotKey[px] = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
     }

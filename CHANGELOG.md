@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.7.4] - 2026-11-12
+
+- Fixed the LED glyphs' perforated, lace-like look: the dot-lighting threshold dropped from 33% coverage (alpha 84) to about 14% (alpha 36), the prototype mock's rule — at 33%, every partially covered dot along a stroke went dark, so letters were full of holes. Dots also grew fuller (radius ratio 0.30 → 0.36, again the mock's proportion). Both changes were verified in a local simulation of the sampling pipeline before shipping: destinations, times, the header and the chip labels render as solid dot glyphs instead of perforated outlines. (The ticker, at roughly 5.5 dots per glyph, remains soft — that is its dot budget, and the bleed is accepted as part of the look.)
+- LED の文字がレースのように穴だらけになる問題を直した。点灯しきい値をカバレッジ33%（alpha 84）から約14%（同 36）へ下げた——プロトタイプ・モックのルールで、33%では線に部分的にかかったドットがすべて落ち、文字に穴が開いていた。ドット半径比も 0.30 からモックの比率 0.36 に戻して太くした。どちらも出荷前にサンプリング処理のシミュレーションで効果を確認済みで、行先・時刻・見出し・チップの文字が穴のないドット文字になる。（テロップは1文字あたり約5.5ドットという予算の都合で柔らかいまま——滲みとして受け入れ済みの範囲。）
+
 ## [1.7.3] - 2026-11-12
 
 - Larger LED dots: the grain target changed from 3.2px to about 4.3px per dot — the size the dots used to reach only on a wide panel (where the 230-column cap took over), which is the fuller look the board had in that state. At sidebar widths the dots now render at that size too. The wide-geometry threshold dropped from 84 to 72 columns so typical sidebar widths keep the full-size fonts instead of falling into the narrow set; the trade-off is fewer dot columns across, so long destinations truncate a little sooner.
