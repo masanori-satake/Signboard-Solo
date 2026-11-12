@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.5.2] - 2026-11-12
+
+- Names that mix Japanese and Latin letters now uppercase their Latin part too, on both boards. Previously only purely-Latin names were uppercased, so a name like 会議memo showed lowercase tiles among the board's uppercase ones and read as a different font. Japanese characters have no letter case, so the whole name is now uppercased unconditionally.
+- 日本語と英字が混ざるファイル名で、英字部分も大文字化するようにした（両盤面）。従来は英字だけの名前しか大文字化しておらず、「会議memo」のような名前で小文字タイルが混ざり、フォントが揃って見えなかった。日本語には大文字・小文字がないので、名前全体を無条件に大文字化する。
+
 ## [1.5.1] - 2026-11-12
 
 - Fixed the flap board's remarks plate showing the final word twice around a flip: when a tab closed, CANCELLED appeared instantly, then the plate flipped again and landed on CANCELLED a second time. A duplicate state update (the host pushes on both tab and tab-group events) was overwriting the plate with the final word while its flip timer was still running, orphaning the timer. The plate now tracks the word it is flipping toward and never stomps an in-flight flip; the word appears only when the flip lands.

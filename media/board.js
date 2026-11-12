@@ -38,7 +38,7 @@ function tilesFor(name, mini) {
 }
 function boardName(name, tiles) {
   const base = stripExt(name);
-  const shown = hasCjk(base) ? base : base.toUpperCase(); // flap wheels are uppercase-only
+  const shown = base.toUpperCase(); // flap wheels are uppercase-only, even in mixed JA/Latin names
   return truncMid(shown, tiles).padEnd(tiles, ' ');
 }
 function hhmm(ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }

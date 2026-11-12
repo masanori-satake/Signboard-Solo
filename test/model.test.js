@@ -42,6 +42,9 @@ test('boardName is always exactly the tile count', () => {
 test('boardName uppercases Latin names (flap wheels are uppercase-only)', () => {
   assert.equal(boardName('extension.ts', 16), 'EXTENSION' + ' '.repeat(7));
   assert.equal(boardName('会議メモ.md', 10), '会議メモ' + ' '.repeat(6));
+  // Mixed JA/Latin names: the Latin part is uppercased too, so one row
+  // never mixes lowercase tiles with the board's uppercase ones.
+  assert.equal(boardName('会議memo.md', 10), '会議MEMO' + ' '.repeat(4));
 });
 
 test('tilesFor picks CJK and mini counts', () => {

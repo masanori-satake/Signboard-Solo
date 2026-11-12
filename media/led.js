@@ -73,8 +73,7 @@ function defaultTicker() {
 const FONT = '"Hiragino Kaku Gothic ProN","Yu Gothic UI",sans-serif';
 
 function stripExt(n) { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(0, i) : n; }
-function hasCjk(t) { return /[\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]/.test(t); }
-function destName(name) { const b = stripExt(name); return hasCjk(b) ? b : b.toUpperCase(); }
+function destName(name) { return stripExt(name).toUpperCase(); }
 function hhmm(ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function clockNow() { const d = new Date(); return [d.getHours(), d.getMinutes()].map((v) => String(v).padStart(2, '0')).join(':'); }
 

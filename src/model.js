@@ -44,11 +44,14 @@ function truncMid(text, max) {
 
 // Fixed-width board name: truncated to the tile count, then blank-padded.
 // Blank tiles exist for layout only and never flip.
-// Latin names are shown in UPPERCASE: real split-flap character wheels are
-// uppercase-only, and mixed case reads as two different fonts on the tiles.
+// Latin letters are shown in UPPERCASE — always, even inside a name that
+// also contains Japanese: real split-flap character wheels are
+// uppercase-only, and leaving the Latin part of a mixed name in lowercase
+// reads as two different fonts on the tiles. Japanese has no letter case,
+// so uppercasing the whole name is safe.
 function boardName(fileName, tiles) {
   const base = stripExt(fileName);
-  const shown = hasCjk(base) ? base : base.toUpperCase();
+  const shown = base.toUpperCase();
   return truncMid(shown, tiles).padEnd(tiles, ' ');
 }
 
