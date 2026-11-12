@@ -277,7 +277,7 @@ class BoardProvider {
     const cfg = vscode.workspace.getConfiguration('signboard');
     const ledScript = led
       ? `<script nonce="${nonce}">window.__SB_LED = ${JSON.stringify({
-        pitch: cfg.get('ledPitch', 5),
+        pitch: cfg.get('ledPitch', 3),
         hole: cfg.get('ledHole', 38),
         glow: cfg.get('ledGlow', true),
       })};</script>\n`

@@ -27,7 +27,7 @@
         },
         "signboard.ledPitch": {
           "type": "number",
-          "default": 5,
+          "default": 3,
           "minimum": 3,
           "maximum": 12,
           "description": "%config.ledPitch.description%"
@@ -111,7 +111,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.8.2",
+  "version": "1.8.3",
   "icon": "icon.png",
   "repository": {
     "type": "git",

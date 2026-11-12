@@ -12,12 +12,13 @@
 
    Dot parameters come from the signboard.ledPitch / ledHole /
    ledGlow settings; their defaults are the approved prototype's
-   initial values (pitch 5px, hole 38%, glow on). Everything else —
+   initial values (hole 38%, glow on; the pitch default became 3px
+   in 1.8.3 after real-machine use). Everything else —
    live rows from the host, statuses, the line-name greeting,
    announcements, screen switching, auto-mode width reporting — is
    the product's own behaviour, unchanged. */
 const vscodeApi = acquireVsCodeApi();
-const CFG = Object.assign({ pitch: 5, hole: 38, glow: true }, window.__SB_LED || {});
+const CFG = Object.assign({ pitch: 3, hole: 38, glow: true }, window.__SB_LED || {});
 
 const SET_SWITCH_MS = 8000;  // screen switching interval
 
@@ -58,7 +59,7 @@ const glowLayer = document.getElementById('glowLayer');
 const pagesEl = document.getElementById('pages');
 
 function applyParams() {
-  const pitch = Math.min(12, Math.max(3, Number(CFG.pitch) || 5));
+  const pitch = Math.min(12, Math.max(3, Number(CFG.pitch) || 3));
   const holePct = Math.min(48, Math.max(25, Number(CFG.hole) || 38));
   board.style.setProperty('--pitch', pitch + 'px');
   board.style.setProperty('--hole', (pitch * holePct / 100).toFixed(2) + 'px');

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.8.3] - 2026-11-13
+
+- LED board: the default dot pitch (`signboard.ledPitch`) is now 3px, down from the mask prototype's 5px — finer dots read better in real use. The setting's range (3–12) is unchanged, so a coarser pitch is still one setting away.
+- LED盤面：ドット間隔（`signboard.ledPitch`）の初期値を、マスク方式プロトタイプの5pxから3pxに変更。実機で使うと細かいドットの方が読みやすかったため。設定範囲（3〜12）はそのままなので、粗くしたければ設定で戻せる。
+
 ## [1.8.2] - 2026-11-13
 
 - Flap board: the time column header is now 到着時刻 / ARRIVAL (was 最終更新 / UPDATED) — this is an arrivals board. Also fixed the header labels disagreeing with the rows at panel widths of roughly 380–540px: the one-line row needs 539px, so below that the wide header stayed while the rows' time and remarks wrapped onto a second line, out from under their labels. The wide tier now starts at 540px, and in the two-line tiers (narrow / mini) all three column labels are hidden, as the rows no longer sit under them; the flight count stays visible.
