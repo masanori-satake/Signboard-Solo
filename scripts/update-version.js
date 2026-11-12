@@ -49,7 +49,7 @@ if (fs.existsSync(readmePath)) {
   // ★ プロジェクトごとに編集する箇所 (Edit per project) ★
   // <package-name> を実際の VSIX ファイル名プレフィックス（package.json の "name" フィールド等）に
   // 置き換えてください。例: <package-name> -> skillmap-solo / structmap-solo
-  readme = readme.replace(new RegExp(`skilltrace-solo-${oldVersion.replace(/\./g, '\\.')}\\.vsix`, 'g'), `skilltrace-solo-${cleanVersion}.vsix`);
+  readme = readme.replace(new RegExp(`signboard-solo-${oldVersion.replace(/\./g, '\\.')}\\.vsix`, 'g'), `signboard-solo-${cleanVersion}.vsix`);
 
   fs.writeFileSync(readmePath, readme, 'utf8');
   console.log(`Updated README.md references to v${cleanVersion}`);

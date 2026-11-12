@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.3.2] - 2026-11-12
+
+- Rewrote the README in the shared Solo-series format used by StructMap-Solo, SkillMap-Solo and SkillTrace-Solo: language switcher, English section followed by a Japanese section, each with a table of contents, key features, three installation routes, how to use, commands, settings, requirements, privacy, roadmap, developer documentation and license. The version-update script's per-project VSIX filename pattern was also corrected from its SkillTrace leftover to signboard-solo, so future version bumps keep the README's example VSIX names current.
+- README を StructMap-Solo／SkillMap-Solo／SkillTrace-Solo と共通の Solo シリーズの型に書き換えた。言語スイッチャー、英語セクション→日本語セクションの構成で、各セクションに目次・主な機能・3通りのインストール方法・使い方・コマンド・設定・動作要件・データの保存について・ロードマップ・開発者向けドキュメント・ライセンスを備える。あわせて、バージョン更新スクリプトに残っていた SkillTrace 由来の VSIX ファイル名パターンを signboard-solo に直し、今後のバージョン更新で README の VSIX 例示名も自動で追随するようにした。
+
 ## [1.3.1] - 2026-11-12
 
 - The “show flap board” title-bar button no longer uses the stock calendar glyph: VS Code's codicon set has no airplane icon, so the button now carries a small custom flight-takeoff glyph (an airliner lifting off over a runway line), drawn as light/dark SVG variants.
