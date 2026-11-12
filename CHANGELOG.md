@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.8.1] - 2026-11-12
+
+- Fixed the LED board showing no trains: the rows were built into a cloned node and wiped. The glow layer is a deep clone of the text layer, so the document held two elements with the rows container's id, and the row builder — which looked the container up by id — wrote into the glow layer's clone, which the next glow sync then replaced. The header and ticker were unaffected because they were referenced directly. The row and ticker containers are now held as direct references, never looked up by id. Verified with a DOM-level test that feeds a state message to the renderer and checks the rows land in the text layer.
+- LED 盤面に列車が表示されない問題を修正。原因は、グロー層が文字レイヤーの複製であるため行コンテナの id が文書内に二重に存在し、id で検索していた行の構築処理がグロー側の複製へ書き込み、直後のグロー同期で消されていたこと。見出しとテロップは直接参照していたため無事だった。行とテロップのコンテナは id 検索をやめ、直接参照で保持するよう変更。状態メッセージを描画側に与えて行が文字レイヤーに入ることを DOM レベルのテストで確認済み。
+
 ## [1.8.0] - 2026-11-12
 
 - The LED board was rebuilt on the mask method: the board is now ordinary text, and a static perforated mask (CSS holes on a dot pitch) lies over it, so letters show only through the holes and read as lit LEDs, with a blurred copy underneath as the light bleed. No dot sampling happens at all — the earlier renderers composed text and sampled it into dots, and their averaging kept thinning or dropping strokes at every size tried; real text under a mask cannot lose its shape. Layout and palette follow the approved mask prototype: coloured type words instead of filled chips, amber destinations, green times, a white clock with seconds, a green ticker along the bottom, and a NEXT marker on the active train. New settings `signboard.ledPitch` (dot pitch, default 5px), `signboard.ledHole` (hole size, default 38% of the pitch) and `signboard.ledGlow` (default on) expose the prototype's parameters for later adjustment. All behaviour is unchanged (live rows, delayed/cancelled/arrived statuses, the line-name greeting, announcements, height-fitted paging, Japanese/English labels).

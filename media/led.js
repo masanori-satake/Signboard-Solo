@@ -67,6 +67,8 @@ function applyParams() {
 }
 
 let rows = [];
+let rowsBoxEl = null;   // set by buildAll; never look these up by id —
+let tickerEl = null;    // the glow layer holds clones of the same nodes
 let prevByKey = new Map();
 let currentSet = 0;
 let lastSetChange = Date.now();
@@ -112,19 +114,17 @@ function buildAll() {
   head.appendChild(el('span', 'ttl', LANG_JA ? '出発案内' : 'DEPARTURES'));
   head.appendChild(el('span', 'clk', clockNow()));
   textLayer.appendChild(head);
-  const rowsBox = el('div', 'rows');
-  rowsBox.id = 'rowsBox';
-  textLayer.appendChild(rowsBox);
-  const ticker = el('div', 'ticker');
-  ticker.id = 'ticker';
-  ticker.appendChild(el('span', 'scroll'));
-  textLayer.appendChild(ticker);
+  rowsBoxEl = el('div', 'rows');
+  textLayer.appendChild(rowsBoxEl);
+  tickerEl = el('div', 'ticker');
+  tickerEl.appendChild(el('span', 'scroll'));
+  textLayer.appendChild(tickerEl);
   buildRows();
   renderTickerText();
 }
 
 function buildRows() {
-  const rowsBox = document.getElementById('rowsBox');
+  const rowsBox = rowsBoxEl;
   if (!rowsBox) return;
   rowsBox.replaceChildren();
   const slice = rows.slice(currentSet * setSize, currentSet * setSize + setSize);
@@ -202,7 +202,7 @@ setInterval(() => {
        (glow off), and a hidden element reports a width of 0. */
     const main = textLayer.querySelector('.ticker .scroll');
     const w = main ? main.scrollWidth : 0;
-    const box = document.getElementById('ticker');
+    const box = tickerEl;
     if (tickerMode === 'loop') {
       const half = w / 2;
       tickerOffset -= 3;
