@@ -243,6 +243,9 @@ function composeScene(now) {
 }
 
 function draw(now) {
+  /* Never sample with geometry the canvases were not laid out for:
+     a mismatch squeezes (or stretches) the whole scene vertically. */
+  if (compose.height !== boardDots() * SCALE || samp.height !== boardDots()) layout();
   composeScene(now);
   const hDots = boardDots();
   sctx.clearRect(0, 0, COLS, hDots);
@@ -323,7 +326,6 @@ window.addEventListener('message', (ev) => {
   const msg = ev.data;
   if (!msg) return;
   if (msg.type === 'state') {
-    layout(); // the section may have been resized since load
     LANG_JA = String(msg.lang || '').toLowerCase().startsWith('ja');
     lineName = msg.line || '';
     if (!announceUntilDone && tickerText !== defaultTicker()) {
@@ -333,6 +335,11 @@ window.addEventListener('message', (ev) => {
     }
     const before = prevByKey;
     rows = msg.rows || [];
+    /* Layout AFTER the rows land: the board height derives from the row
+       count, and laying out with the previous (or initial empty) rows
+       left the sampler geometry stale — the scene was squeezed into
+       the wrong dot height until the next resize. */
+    layout();
     for (const r of rows) {
       const prev = before.get(r.key);
       if (prev && prev.status !== r.status && r.status === 'arrived') {

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.5.3] - 2026-11-12
+
+- Fixed the LED board appearing vertically squashed right after switching from the flap board: at load, the board laid itself out for the maximum row count (no rows known yet), and when the actual rows arrived, the sampler kept the stale tall geometry, squeezing the scene into a fraction of the dot height until the next resize. Layout now runs after the new rows land, and each frame refuses to sample with geometry the canvases were not laid out for.
+- フラップから LED に切り替えた直後、盤面が縦に圧縮されて見える不具合を直した。読み込み直後は行数が分からず最大行数ぶんの高さでレイアウトされ、実際の行が届いてもサンプラーが古い高いジオメトリのままになり、場面がドット高の数分の一に潰れていた（リサイズで直ったのはそのため）。レイアウトを行データの反映後に実行するよう直し、各フレームでもキャンバスのジオメトリと食い違うサンプリングをしないようガードを入れた。
+
 ## [1.5.2] - 2026-11-12
 
 - Names that mix Japanese and Latin letters now uppercase their Latin part too, on both boards. Previously only purely-Latin names were uppercased, so a name like 会議memo showed lowercase tiles among the board's uppercase ones and read as a different font. Japanese characters have no letter case, so the whole name is now uppercased unconditionally.
