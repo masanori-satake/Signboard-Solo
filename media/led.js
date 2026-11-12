@@ -28,25 +28,40 @@ const H = H_DOTS * SCALE;
    kept as large as the row allows: two kanji in too few dots melt into
    a blob, which is what the chip sizes guard against. */
 function geom() {
-  return COLS >= 84
-    ? { chipW: 76, chipH: 36, chipFont: 30, chipBase: 35, destX: 88, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 }
-    : { chipW: 60, chipH: 36, chipFont: 26, chipBase: 33, destX: 68, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 };
+  /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
+     so the chip grows in English and the destination shifts right. */
+  if (COLS >= 84) {
+    return LANG_JA
+      ? { chipW: 76, chipH: 36, chipFont: 30, chipBase: 35, destX: 88, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 }
+      : { chipW: 118, chipH: 36, chipFont: 30, chipBase: 35, destX: 130, destFont: 34, timeFont: 30, statusFont: 26, statusW: 68, baseLine: 37 };
+  }
+  return LANG_JA
+    ? { chipW: 60, chipH: 36, chipFont: 26, chipBase: 33, destX: 68, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 }
+    : { chipW: 92, chipH: 36, chipFont: 26, chipBase: 33, destX: 102, destFont: 30, timeFont: 26, statusFont: 22, statusW: 52, baseLine: 36 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
 let W = COLS * SCALE;        // compose width in px
 
+/* [Japanese label, English label, colour] — the board follows the
+   VS Code display language, like the flap board does. */
 const TYPE_BY_EXT = {
-  ts: ['特急', '#e03131'], go: ['特急', '#e03131'],
-  js: ['快速', '#f08c00'], css: ['快速', '#f08c00'], rs: ['快速', '#f08c00'],
-  py: ['普通', '#2f9e44'], json: ['普通', '#2f9e44'], html: ['普通', '#2f9e44'],
+  ts: ['特急', 'LTD EXP', '#e03131'], go: ['特急', 'LTD EXP', '#e03131'],
+  js: ['快速', 'RAPID', '#f08c00'], css: ['快速', 'RAPID', '#f08c00'], rs: ['快速', 'RAPID', '#f08c00'],
+  py: ['普通', 'LOCAL', '#2f9e44'], json: ['普通', 'LOCAL', '#2f9e44'], html: ['普通', 'LOCAL', '#2f9e44'],
 };
-const TYPE_DEFAULT = ['各停', '#1971c2'];
+const TYPE_DEFAULT = ['各停', 'ALL-STOPS', '#1971c2'];
+let LANG_JA = false;
 /* The line name comes from the host: the parent directory of the first
    file tab. The greeting thanks riders of that line, like a real station
    board; with no file open it falls back to the Signboard name. */
 let lineName = '';
 function defaultTicker() {
+  if (!LANG_JA) {
+    return lineName
+      ? 'Thank you for riding the ' + lineName + ' Line today. This board shows your open tabs.'
+      : 'Thank you for using Signboard today. This board shows your open tabs.';
+  }
   return lineName
     ? '本日も ' + lineName + '線 をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。'
     : '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
@@ -126,9 +141,9 @@ function announce(text) {
   announceUntilDone = true;
 }
 function statusOf(r, blinkOn) {
-  if (r.status === 'delayed') return blinkOn ? ['遅延', '#ff3b30'] : ['', ''];
-  if (r.status === 'cancelled') return ['運休', '#ff3b30'];
-  if (r.status === 'arrived') return ['到着', '#39e75f'];
+  if (r.status === 'delayed') return blinkOn ? [LANG_JA ? '遅延' : 'DELAYED', '#ff3b30'] : ['', ''];
+  if (r.status === 'cancelled') return [LANG_JA ? '運休' : 'CANCELLED', '#ff3b30'];
+  if (r.status === 'arrived') return [LANG_JA ? '到着' : 'ARRIVED', '#39e75f'];
   return ['', ''];
 }
 
@@ -136,13 +151,22 @@ function composeScene(now) {
   cctx.clearRect(0, 0, W, H);
   cctx.textBaseline = 'alphabetic';
   /* header */
-  cctx.fillStyle = '#ffb03a';
-  cctx.font = 'bold 38px ' + FONT;
-  cctx.fillText('出発案内', 2, 40);
   cctx.fillStyle = '#39e75f';
   cctx.font = 'bold 34px ui-monospace,Menlo,monospace';
   const ck = clockNow();
-  cctx.fillText(ck, W - cctx.measureText(ck).width - 2, 40);
+  const ckW = cctx.measureText(ck).width;
+  cctx.fillStyle = '#ffb03a';
+  const headText = LANG_JA ? '出発案内' : 'DEPARTURES';
+  let headFont = LANG_JA ? 38 : 30;
+  cctx.font = 'bold ' + headFont + 'px ' + FONT;
+  while (headFont > 16 && cctx.measureText(headText).width > W - ckW - 14) {
+    headFont -= 2;
+    cctx.font = 'bold ' + headFont + 'px ' + FONT;
+  }
+  cctx.fillText(headText, 2, 40);
+  cctx.fillStyle = '#39e75f';
+  cctx.font = 'bold 34px ui-monospace,Menlo,monospace';
+  cctx.fillText(ck, W - ckW - 2, 40);
   /* ticker, directly under the header so it is never cut off */
   const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
@@ -163,20 +187,34 @@ function composeScene(now) {
   slice.forEach((r, i) => {
     const y0 = rowsY + i * ROW_D * SCALE;
     const baseLine = y0 + g.baseLine;
-    const [label, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
+    const [labelJa, labelEn, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
+    const label = LANG_JA ? labelJa : labelEn;
     const [st, sc] = statusOf(r, blinkOn);
     /* layout: [chip][destination ...][time][status?] */
     cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
     const t = hhmm(r.mtime);
     const timeW = cctx.measureText(t).width;
-    const timeEnd = st ? W - g.statusW - 4 : W - 2;
+    /* English status words are wider than the reserved zone; reserve
+       what the word actually measures so it never overruns the time. */
+    let statusW = g.statusW;
+    if (st) {
+      cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
+      statusW = Math.max(g.statusW, cctx.measureText(st).width + 6);
+    }
+    const timeEnd = st ? W - statusW - 4 : W - 2;
     const timeX = timeEnd - timeW;
     cctx.fillStyle = color;
     cctx.beginPath();
     cctx.roundRect(2, y0 + 6, g.chipW, g.chipH, 8);
     cctx.fill();
     cctx.fillStyle = '#ffffff';
-    cctx.font = 'bold ' + g.chipFont + 'px ' + FONT;
+    /* Shrink the chip label until it fits (mainly for English words). */
+    let chipFont = g.chipFont;
+    cctx.font = 'bold ' + chipFont + 'px ' + FONT;
+    while (chipFont > 12 && cctx.measureText(label).width > g.chipW - 8) {
+      chipFont -= 2;
+      cctx.font = 'bold ' + chipFont + 'px ' + FONT;
+    }
     const lw = cctx.measureText(label).width;
     cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + g.chipBase);
     cctx.fillStyle = '#ffb03a';
@@ -274,6 +312,7 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     layout(); // the section may have been resized since load
+    LANG_JA = String(msg.lang || '').toLowerCase().startsWith('ja');
     lineName = msg.line || '';
     if (!announceUntilDone && tickerText !== defaultTicker()) {
       // The line changed (a different first file): restart the greeting.
@@ -286,10 +325,10 @@ window.addEventListener('message', (ev) => {
       const prev = before.get(r.key);
       if (prev && prev.status !== r.status && r.status === 'arrived') {
         lastEventAt = Date.now(); jumpToKey(r.key);
-        announce('まもなく ' + destName(r.name) + ' が到着します');
+        announce(LANG_JA ? 'まもなく ' + destName(r.name) + ' が到着します' : destName(r.name) + ' will arrive shortly.');
       } else if ((!prev && r.status === 'cancelled') || (prev && prev.status !== r.status && r.status === 'cancelled')) {
         lastEventAt = Date.now(); jumpToKey(r.key);
-        announce(destName(r.name) + ' は運休となりました');
+        announce(LANG_JA ? destName(r.name) + ' は運休となりました' : destName(r.name) + ' has been cancelled.');
       }
     }
     if (currentSet >= sets()) currentSet = sets() - 1;

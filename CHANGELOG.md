@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.4.0] - 2026-11-12
+
+- The LED board now follows the VS Code display language, like the flap board always did: in English environments the header reads DEPARTURES, train types are LTD EXP / RAPID / LOCAL / ALL-STOPS, statuses read DELAYED / CANCELLED / ARRIVED, and the announcement ticker and line greeting are in English (“Thank you for riding the ○○ Line today”, “… will arrive shortly”, “… has been cancelled”). English type chips are wider and labels shrink to fit; English status words reserve their measured width so they never overrun the time. The README's English section no longer mixes in Japanese status words.
+- LED盤面が、フラップ盤面と同様に VS Code の表示言語へ追随するようになった。英語環境では見出しが DEPARTURES、種別が LTD EXP / RAPID / LOCAL / ALL-STOPS、状態が DELAYED / CANCELLED / ARRIVED になり、案内テロップと路線名の挨拶も英語になる。英語の種別チップは幅を広げ、ラベルは収まるよう自動で縮小する。英語の状態語は実測幅を確保するので時刻へ被らない。あわせて README の英語セクションに混ざっていた日本語の状態語を英語表記に直した。
+
 ## [1.3.2] - 2026-11-12
 
 - Rewrote the README in the shared Solo-series format used by StructMap-Solo, SkillMap-Solo and SkillTrace-Solo: language switcher, English section followed by a Japanese section, each with a table of contents, key features, three installation routes, how to use, commands, settings, requirements, privacy, roadmap, developer documentation and license. The version-update script's per-project VSIX filename pattern was also corrected from its SkillTrace leftover to signboard-solo, so future version bumps keep the README's example VSIX names current.

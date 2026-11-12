@@ -1,6 +1,6 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.3.2-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.4.0-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
@@ -18,7 +18,7 @@
 
 It does nothing useful, on purpose. There is nothing to click and nothing to accomplish: the board just flaps and glows, quietly, whenever your files change, in the corner of your vision while you work. Because the rows are your own tabs, the board never repeats itself.
 
-Current version: **v1.3.2**
+Current version: **v1.4.0**
 
 ---
 
@@ -50,8 +50,9 @@ Current version: **v1.3.2**
    - The header clock is a 7-segment LED clock whose colon blinks every second.
 
 2. **Station LED Departure Board**
-   - The same tabs as trains: the type （特急 / 快速 / 普通 / 各停） comes from the file's language, the destination is the file name without its extension, and the departure time is its last-modified time.
-   - Unsaved changes blink **遅延** in red; closed tabs linger as **運休**.
+   - The same tabs as trains: the train type (Limited Express / Rapid / Local / All-Stops) comes from the file's language, the destination is the file name without its extension, and the departure time is its last-modified time.
+   - Unsaved changes blink **DELAYED** in red; closed tabs linger as **CANCELLED**.
+   - Every label on this board — header, train types, statuses, and the announcement line — follows the VS Code display language, in English or Japanese.
    - A scrolling announcement line runs station-style messages — arrivals, cancellations, and a greeting that thanks riders of the “line” named after the parent directory of your first file tab.
 
 3. **Lives in the Explorer**
@@ -93,7 +94,7 @@ For VSCodium, Gitpod, Eclipse Theia, or environments configured with Open VSX:
 #### Method 3: Install from VSIX Package File (Offline / Manual)
 
 1. Go to the [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) page.
-2. Download the `.vsix` file (e.g., `signboard-solo-1.3.2.vsix`) under Assets.
+2. Download the `.vsix` file (e.g., `signboard-solo-1.4.0.vsix`) under Assets.
 3. In VS Code Extensions view (`Ctrl+Shift+X`), click the **"..." (Views and More Actions)** icon at the top right, select **Install from VSIX...**, and choose the downloaded file.
 
 ---
@@ -106,8 +107,8 @@ Open the **Explorer** and expand the **Signboard** section. That is all — the 
 
 #### 2. Watch things happen
 - **Save a file** → its row flaps to the new time and shows ARRIVED for a few seconds.
-- **Edit without saving** → the row reads DELAYED. In LED mode, 遅延 blinks in red.
-- **Close a tab** → the row stays briefly as CANCELLED (flap) or 運休 (LED), then disappears.
+- **Edit without saving** → the row reads DELAYED, blinking in red on the LED board.
+- **Close a tab** → the row stays briefly as CANCELLED, then disappears.
 - **Reorder tabs** → the board reorders with them.
 
 #### 3. Switch the display mode
@@ -195,7 +196,7 @@ npm run update-version <X.Y.Z>
 
 実用性はありません。それが目的です。クリックするものも、達成するものもなく、ファイルが変わるたびに盤面が静かにパタパタ／発光するだけです。行の中身は自分のタブなので、盤面が同じ状態を繰り返すことはまずありません。
 
-現在のバージョン: **v1.3.2**
+現在のバージョン: **v1.4.0**
 
 ---
 
@@ -230,6 +231,7 @@ npm run update-version <X.Y.Z>
    - 同じタブを列車として表示します。種別（特急／快速／普通／各停）はファイルの言語から、行先は拡張子なしのファイル名、発車時刻は最終更新時刻です。
    - 未保存の変更は「遅延」が赤く点滅し、閉じたタブは「運休」としてしばらく残ります。
    - 案内テロップが流れます。到着・運休の案内に加えて、先頭のファイルの親ディレクトリ名を路線名にした「本日も ○○線 をご利用くださいまして、ありがとうございます」の挨拶も流れます。
+   - 盤面の表記（見出し・種別・状態・テロップ）は VS Code の表示言語に従います（日本語／英語）。
 
 3. **エクスプローラーの中に住む**
    - 盤面は専用のアクティビティバーパネルではなく、**エクスプローラーの中のセクション**です。「見に行く場所」ではなく「視界の端で動くもの」として置かれます。セクションの見出しを右サイドバーやパネルへドラッグすれば移動でき、配置は保持されます。
@@ -272,7 +274,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 #### 方法 3: VSIX パッケージファイルからのインストール（オフライン環境等）
 
 1. 本リポジトリの [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) ページにアクセスします。
-2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.3.2.vsix`）をダウンロードします。
+2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.4.0.vsix`）をダウンロードします。
 3. VS Code の拡張機能ビュー（`Ctrl+Shift+X` / `Cmd+Shift+X`）を開き、右上の **「...」（その他の操作）アイコン** をクリックして **「VSIX からのインストール... (Install from VSIX...)」** を選択し、ダウンロードしたファイルを選んでください。
 
 ---
