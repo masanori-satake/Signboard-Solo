@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.3.1] - 2026-11-12
+
+- The “show flap board” title-bar button no longer uses the stock calendar glyph: VS Code's codicon set has no airplane icon, so the button now carries a small custom flight-takeoff glyph (an airliner lifting off over a runway line), drawn as light/dark SVG variants.
+- タイトルバーの「フラップ表示に切り替え」ボタンのグリフを、カレンダーから自作の離陸グリフ（滑走路の線の上を機首を上げて離陸する旅客機）に変えた。VS Code の codicon には飛行機のアイコンが無いため、ライト／ダーク両テーマ用の SVG を用意した。
+
 ## [1.3.0] - 2026-11-12
 
 - The LED board's greeting ticker now names a railway line after your work: it thanks riders of “<parent directory of the first file tab>線” instead of Signboard — open a file in a project folder and the board greets that project's line. The line follows the first file tab in tab order and updates when it changes; with no file open, the Signboard greeting remains.
