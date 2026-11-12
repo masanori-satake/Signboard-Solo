@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.5.0] - 2026-11-12
+
+- The LED board no longer shows a fixed four trains per screen: the number of rows now follows the view height (measured, like the flap board's paging), so trains stay on one screen whenever the space below is available and page only when they truly do not fit. The board also got finer and lower again: dot pitch about 3.2px (was about 4px) with slightly smaller dots, train rows 9 dots tall (was 10), header 10 (was 11), announcement band 7 (was 8).
+- LED盤面の1画面あたりの行数を固定4行からやめ、ビューの高さに追随させた（フラップ盤面のページ送りと同じ実測方式）。下にスペースがあるのに複数ページへ分かれることがなくなり、本当に収まらないときだけページ送りする。あわせて粒と高さをさらに詰めた：ドット間隔は約4px→約3.2pxで粒自体も少し小さく、列車行は10ドット→9ドット、ヘッダー11→10、案内帯8→7。
+
 ## [1.4.1] - 2026-11-12
 
 - LED board refinement: the dot grain is finer (more, smaller dots across the same width — the pitch went from about 5px to about 4px and the dots themselves are slightly smaller), and the whole board is shorter: train rows are 10 dots tall instead of 12, the header 11 instead of 12, and the announcement band 8 instead of 9, with fonts kept as large as the slimmer rows allow.

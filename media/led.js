@@ -12,16 +12,19 @@
    off, and the announcements are the LED mode's main act. */
 const vscodeApi = acquireVsCodeApi();
 
-const SET_SIZE = 4;          // trains per screen (design memo E5)
 const SET_SWITCH_MS = 8000;  // screen switching interval
 const SCALE = 4;             // compose at 4x, sample every 4th pixel
 /* dot-unit geometry */
-const HEADER_D = 11;         // 出発案内 + clock
-const TICKER_D = 8;          // announcement line
-const ROW_D = 10;            // one train row
+const HEADER_D = 10;         // 出発案内 + clock
+const TICKER_D = 7;          // announcement line
+const ROW_D = 9;             // one train row
 const PAD_D = 2;
-const H_DOTS = HEADER_D + TICKER_D + SET_SIZE * ROW_D + PAD_D; // 61
-const H = H_DOTS * SCALE;
+/* Trains per screen is NOT fixed: it follows the view height (measured
+   in layout), so the board pages only when the trains truly do not fit
+   — the same rule the flap board uses. */
+let setSize = 4;
+function rowsShown() { return Math.max(1, Math.min(setSize, rows.length || setSize)); }
+function boardDots() { return HEADER_D + TICKER_D + rowsShown() * ROW_D + PAD_D; }
 /* Element sizes in compose px, two sets: at Explorer-section widths the
    wide set would leave the destination only a character or two, so the
    narrow set shrinks the chip, time and status zones first. The chip is
@@ -30,15 +33,15 @@ const H = H_DOTS * SCALE;
 function geom() {
   /* English type labels (LTD EXP, ALL-STOPS) are wider than two kanji,
      so the chip grows in English and the destination shifts right.
-     Sizes fit the 10-dot row: fonts stay as large as the row allows. */
+     Sizes fit the 9-dot row: fonts stay as large as the row allows. */
   if (COLS >= 84) {
     return LANG_JA
-      ? { chipW: 76, chipH: 32, chipFont: 26, chipBase: 30, destX: 88, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 33 }
-      : { chipW: 118, chipH: 32, chipFont: 26, chipBase: 30, destX: 130, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 33 };
+      ? { chipW: 76, chipH: 28, chipFont: 24, chipBase: 27, destX: 88, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 }
+      : { chipW: 118, chipH: 28, chipFont: 24, chipBase: 27, destX: 130, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 };
   }
   return LANG_JA
-    ? { chipW: 60, chipH: 32, chipFont: 22, chipBase: 29, destX: 68, destFont: 26, timeFont: 22, statusFont: 19, statusW: 52, baseLine: 32 }
-    : { chipW: 92, chipH: 32, chipFont: 22, chipBase: 29, destX: 102, destFont: 26, timeFont: 22, statusFont: 19, statusW: 52, baseLine: 32 };
+    ? { chipW: 60, chipH: 28, chipFont: 20, chipBase: 26, destX: 68, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 }
+    : { chipW: 92, chipH: 28, chipFont: 20, chipBase: 26, destX: 102, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
@@ -78,10 +81,9 @@ function clockNow() { const d = new Date(); return [d.getHours(), d.getMinutes()
 const canvas = document.getElementById('led');
 const ctx = canvas.getContext('2d');
 const compose = document.createElement('canvas');
-compose.height = H;
 const cctx = compose.getContext('2d', { willReadFrequently: true });
 const base = document.createElement('canvas');
-/* Coverage sampler: the composed scene is downscaled into a COLS x H_DOTS
+/* Coverage sampler: the composed scene is downscaled into a COLS x boardDots()
    canvas (browser filtering averages each dot's block), so a dot lights
    by how much of it the glyph actually covers — strokes stop dropping
    out the way they did with single-centre-pixel sampling. */
@@ -92,19 +94,27 @@ let pitch = 6, radius = 2;
 function layout() {
   const w = Math.max(160, canvas.clientWidth || document.body.clientWidth - 16);
   /* Finer grain: more, smaller dots across the same width. */
-  COLS = Math.max(64, Math.min(190, Math.round(w / 4)));
+  COLS = Math.max(64, Math.min(230, Math.round(w / 3.2)));
   W = COLS * SCALE;
   if (compose.width !== W) compose.width = W;
-  if (samp.width !== COLS) { samp.width = COLS; samp.height = H_DOTS; }
   pitch = w / COLS;
-  radius = pitch * 0.31;
+  radius = pitch * 0.30;
+  /* Rows per screen follow the view height: the board grows downward
+     into the space the view offers and pages only past that. */
+  const availDots = Math.floor((window.innerHeight - 16) / pitch);
+  const fit = Math.floor((availDots - HEADER_D - TICKER_D - PAD_D) / ROW_D);
+  setSize = Math.max(1, Math.min(24, fit));
+  if (currentSet >= sets()) currentSet = sets() - 1;
+  const hDots = boardDots();
+  if (compose.height !== hDots * SCALE) compose.height = hDots * SCALE;
+  if (samp.width !== COLS || samp.height !== hDots) { samp.width = COLS; samp.height = hDots; }
   canvas.width = Math.round(w);
-  canvas.height = Math.round(pitch * H_DOTS);
+  canvas.height = Math.round(pitch * hDots);
   base.width = canvas.width; base.height = canvas.height;
   const b = base.getContext('2d');
   b.fillStyle = '#060607'; b.fillRect(0, 0, base.width, base.height);
   b.fillStyle = '#1b1116';
-  for (let y = 0; y < H_DOTS; y++) for (let x = 0; x < COLS; x++) {
+  for (let y = 0; y < hDots; y++) for (let x = 0; x < COLS; x++) {
     b.beginPath(); b.arc((x + 0.5) * pitch, (y + 0.5) * pitch, radius, 0, 7); b.fill();
   }
 }
@@ -130,11 +140,11 @@ let tickerText = defaultTicker();
 let tickerOffset = null; // null = start at right edge
 let announceUntilDone = false;
 
-function sets() { return Math.max(1, Math.ceil(rows.length / SET_SIZE)); }
+function sets() { return Math.max(1, Math.ceil(rows.length / setSize)); }
 function jumpToKey(key) {
   const idx = rows.findIndex((r) => r.key === key);
   if (idx < 0) return;
-  const s = Math.floor(idx / SET_SIZE);
+  const s = Math.floor(idx / setSize);
   if (s !== currentSet) { currentSet = s; lastSetChange = Date.now(); }
 }
 function announce(text) {
@@ -150,32 +160,32 @@ function statusOf(r, blinkOn) {
 }
 
 function composeScene(now) {
-  cctx.clearRect(0, 0, W, H);
+  cctx.clearRect(0, 0, W, boardDots() * SCALE);
   cctx.textBaseline = 'alphabetic';
   /* header */
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 34px ui-monospace,Menlo,monospace';
+  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
   const ck = clockNow();
   const ckW = cctx.measureText(ck).width;
   cctx.fillStyle = '#ffb03a';
   const headText = LANG_JA ? '出発案内' : 'DEPARTURES';
-  let headFont = LANG_JA ? 38 : 30;
+  let headFont = LANG_JA ? 36 : 28;
   cctx.font = 'bold ' + headFont + 'px ' + FONT;
   while (headFont > 16 && cctx.measureText(headText).width > W - ckW - 14) {
     headFont -= 2;
     cctx.font = 'bold ' + headFont + 'px ' + FONT;
   }
-  cctx.fillText(headText, 2, 40);
+  cctx.fillText(headText, 2, 37);
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 34px ui-monospace,Menlo,monospace';
-  cctx.fillText(ck, W - ckW - 2, 40);
+  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
+  cctx.fillText(ck, W - ckW - 2, 37);
   /* ticker, directly under the header so it is never cut off */
   const tickerY = HEADER_D * SCALE;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 24px ' + FONT;
+  cctx.font = 'bold 22px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
   if (tickerOffset === null) tickerOffset = W;
-  cctx.fillText(tickerText, tickerOffset, tickerY + 27);
+  cctx.fillText(tickerText, tickerOffset, tickerY + 24);
   tickerOffset -= 2;
   if (tickerOffset < -tw) {
     tickerOffset = null;
@@ -184,7 +194,7 @@ function composeScene(now) {
   /* train rows */
   const blinkOn = Math.floor(now / 530) % 2 === 0;
   const rowsY = (HEADER_D + TICKER_D) * SCALE;
-  const slice = rows.slice(currentSet * SET_SIZE, currentSet * SET_SIZE + SET_SIZE);
+  const slice = rows.slice(currentSet * setSize, currentSet * setSize + setSize);
   const g = geom();
   slice.forEach((r, i) => {
     const y0 = rowsY + i * ROW_D * SCALE;
@@ -235,11 +245,12 @@ function composeScene(now) {
 
 function draw(now) {
   composeScene(now);
-  sctx.clearRect(0, 0, COLS, H_DOTS);
+  const hDots = boardDots();
+  sctx.clearRect(0, 0, COLS, hDots);
   sctx.imageSmoothingEnabled = true;
   sctx.imageSmoothingQuality = 'high';
-  sctx.drawImage(compose, 0, 0, COLS, H_DOTS);
-  const img = sctx.getImageData(0, 0, COLS, H_DOTS).data;
+  sctx.drawImage(compose, 0, 0, COLS, hDots);
+  const img = sctx.getImageData(0, 0, COLS, hDots).data;
   ctx.drawImage(base, 0, 0);
   /* Dots are binary, like a real LED board: coverage past the threshold
      lights the dot at full brightness, anything less stays dark. The
@@ -248,9 +259,9 @@ function draw(now) {
      low enough to keep thin digit strokes, and a final pass fills a
      one-dot gap when the dots on both sides share a colour: that is a
      sampling notch in a stroke, not a real gap in the glyph. */
-  const lit = new Uint8Array(COLS * H_DOTS);
-  const dotKey = new Int32Array(COLS * H_DOTS).fill(-1);
-  for (let dy = 0; dy < H_DOTS; dy++) {
+  const lit = new Uint8Array(COLS * hDots);
+  const dotKey = new Int32Array(COLS * hDots).fill(-1);
+  for (let dy = 0; dy < hDots; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = dx + dy * COLS;
       if (img[px * 4 + 3] <= 84) continue;
@@ -258,7 +269,7 @@ function draw(now) {
       dotKey[px] = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
     }
   }
-  for (let dy = 1; dy < H_DOTS - 1; dy++) {
+  for (let dy = 1; dy < hDots - 1; dy++) {
     for (let dx = 1; dx < COLS - 1; dx++) {
       const px = dx + dy * COLS;
       if (lit[px]) continue;
@@ -271,7 +282,7 @@ function draw(now) {
     }
   }
   const byColor = new Map();
-  for (let dy = 0; dy < H_DOTS; dy++) {
+  for (let dy = 0; dy < hDots; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = dx + dy * COLS;
       if (!lit[px]) continue;
