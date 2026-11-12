@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.6.0] - 2026-11-12
+
+- Improved LED legibility without changing the board's look: the scene is now composed at double resolution and supersampled (each dot's coverage is estimated from 8×8 source pixels instead of 4×4), sampled dot colours are snapped to the scene palette so mixed edge colours — the main cause of melted glyphs, above all the white type-chip labels on their coloured chips — resolve to the majority colour, the lighting threshold rose (105) so neighbouring strokes stop fusing, dots shrank slightly relative to their pitch (radius ratio 0.27) for clearer separation, text sizes grew within the same dot bands (header, destination, type chips, time, ticker), and destinations gained a touch of letter spacing.
+- LED の視認性を、盤面の雰囲気を変えずに改善した。シーンを2倍の解像度で描いてスーパーサンプリングし（1ドットのカバレッジを 4×4 ではなく 8×8 の元ピクセルから推定）、サンプリングしたドットの色をシーンのパレット色へ寄せることで、混色した縁のドット――文字が潰れる主因で、特に色チップ上の白い種別文字が顕著だった――を「セルの中で勝った色」で描くようにした。点灯しきい値も上げて（105）隣り合う線の融合を抑え、ドット半径比を 0.27 に少し小さくして分離を良くし、同じドット帯のまま各テキスト（見出し・行先・種別チップ・時刻・テロップ）を少し大きくし、行先にわずかな字間を入れた。
+
 ## [1.5.4] - 2026-11-12
 
 - Fixed the cancelled row appearing one position too low: closing the second of four tabs made the *third* row show CANCELLED. Live rows were renumbered compactly (0, 1, 2) while the closed tab's ghost kept its old number (1), so the tie sorted the ghost below the tab that had moved up. Live rows and ghosts now share one merged ordering — a ghost anchors to the live row that followed it and stays in its own place on the board (both display modes).

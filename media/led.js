@@ -5,15 +5,19 @@
    so kanji become dot glyphs as-is. The unlit dot grid is pre-rendered
    once; each frame only draws the lit dots, batched by colour.
 
-   Layout is defined in DOT units (1 dot = SCALE compose px) so elements
-   keep their proportions at any width; the dot column count adapts to
-   the view width. The announcement ticker sits directly under the
+   Layout is defined in DOT units (drawing coordinates are UNIT px per
+   dot on a SCALE-px backing, supersampled for faithful coverage) so
+   elements keep their proportions at any width; the dot column count
+   adapts to the view width. The announcement ticker sits directly
+   under the
    header: in a short Explorer section the bottom of the board is cut
    off, and the announcements are the LED mode's main act. */
 const vscodeApi = acquireVsCodeApi();
 
 const SET_SWITCH_MS = 8000;  // screen switching interval
-const SCALE = 4;             // compose at 4x, sample every 4th pixel
+const SCALE = 8;             // compose backing resolution per dot
+const UNIT = 4;              // drawing coordinates are in 4px-per-dot units…
+const SS = SCALE / UNIT;     // …supersampled by this factor for sampling
 /* dot-unit geometry */
 const HEADER_D = 10;         // 出発案内 + clock
 const TICKER_D = 7;          // announcement line
@@ -36,16 +40,17 @@ function geom() {
      Sizes fit the 9-dot row: fonts stay as large as the row allows. */
   if (COLS >= 84) {
     return LANG_JA
-      ? { chipW: 76, chipH: 28, chipFont: 24, chipBase: 27, destX: 88, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 }
-      : { chipW: 118, chipH: 28, chipFont: 24, chipBase: 27, destX: 130, destFont: 28, timeFont: 24, statusFont: 21, statusW: 68, baseLine: 30 };
+      ? { chipW: 76, chipH: 30, chipFont: 28, chipBase: 28, destX: 88, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 31 }
+      : { chipW: 118, chipH: 30, chipFont: 28, chipBase: 28, destX: 130, destFont: 30, timeFont: 26, statusFont: 22, statusW: 68, baseLine: 31 };
   }
   return LANG_JA
-    ? { chipW: 60, chipH: 28, chipFont: 20, chipBase: 26, destX: 68, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 }
-    : { chipW: 92, chipH: 28, chipFont: 20, chipBase: 26, destX: 102, destFont: 25, timeFont: 21, statusFont: 18, statusW: 52, baseLine: 29 };
+    ? { chipW: 60, chipH: 30, chipFont: 24, chipBase: 27, destX: 68, destFont: 27, timeFont: 23, statusFont: 19, statusW: 52, baseLine: 30 }
+    : { chipW: 92, chipH: 30, chipFont: 24, chipBase: 27, destX: 102, destFont: 27, timeFont: 23, statusFont: 19, statusW: 52, baseLine: 30 };
 }
 
 let COLS = 76;               // dots across, adapted in layout()
-let W = COLS * SCALE;        // compose width in px
+let W = COLS * SCALE;        // compose backing width in px
+let W4 = COLS * UNIT;        // compose width in drawing units
 
 /* [Japanese label, English label, colour] — the board follows the
    VS Code display language, like the flap board does. */
@@ -55,6 +60,21 @@ const TYPE_BY_EXT = {
   py: ['普通', 'LOCAL', '#2f9e44'], json: ['普通', 'LOCAL', '#2f9e44'], html: ['普通', 'LOCAL', '#2f9e44'],
 };
 const TYPE_DEFAULT = ['各停', 'ALL-STOPS', '#1971c2'];
+/* Every colour the scene is painted in. Sampled dots are snapped to the
+   nearest palette colour: a cell straddling white chip text and the blue
+   chip behind it otherwise renders as a murky mixed dot, and strings of
+   those are what melted the chips into blobs. Majority colour wins. */
+const PALETTE = [
+  [255, 176, 58],  // header / destination amber
+  [255, 160, 46],  // ticker orange
+  [57, 231, 95],   // time / arrived green
+  [255, 59, 48],   // delayed / cancelled red
+  [255, 255, 255], // chip labels
+  [224, 49, 49],   // chip: 特急 / LTD EXP
+  [240, 140, 0],   // chip: 快速 / RAPID
+  [47, 158, 68],   // chip: 普通 / LOCAL
+  [25, 113, 194],  // chip: 各停 / ALL-STOPS
+];
 let LANG_JA = false;
 /* The line name comes from the host: the parent directory of the first
    file tab. The greeting thanks riders of that line, like a real station
@@ -95,9 +115,10 @@ function layout() {
   /* Finer grain: more, smaller dots across the same width. */
   COLS = Math.max(64, Math.min(230, Math.round(w / 3.2)));
   W = COLS * SCALE;
+  W4 = COLS * UNIT;
   if (compose.width !== W) compose.width = W;
   pitch = w / COLS;
-  radius = pitch * 0.30;
+  radius = pitch * 0.27;
   /* Rows per screen follow the view height: the board grows downward
      into the space the view offers and pages only past that. */
   const availDots = Math.floor((window.innerHeight - 16) / pitch);
@@ -159,31 +180,37 @@ function statusOf(r, blinkOn) {
 }
 
 function composeScene(now) {
-  cctx.clearRect(0, 0, W, boardDots() * SCALE);
+  /* Draw in UNIT coordinates on a SCALE-resolution backing: sampling
+     then averages 8x8 source pixels per dot instead of 4x4, so each
+     dot's coverage — and with it the whole glyph — is estimated far
+     more faithfully. */
+  cctx.setTransform(1, 0, 0, 1, 0, 0);
+  cctx.clearRect(0, 0, compose.width, compose.height);
+  cctx.setTransform(SS, 0, 0, SS, 0, 0);
   cctx.textBaseline = 'alphabetic';
   /* header */
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
+  cctx.font = 'bold 32px ui-monospace,Menlo,monospace';
   const ck = clockNow();
   const ckW = cctx.measureText(ck).width;
   cctx.fillStyle = '#ffb03a';
   const headText = LANG_JA ? '出発案内' : 'DEPARTURES';
-  let headFont = LANG_JA ? 36 : 28;
+  let headFont = LANG_JA ? 38 : 30;
   cctx.font = 'bold ' + headFont + 'px ' + FONT;
-  while (headFont > 16 && cctx.measureText(headText).width > W - ckW - 14) {
+  while (headFont > 16 && cctx.measureText(headText).width > W4 - ckW - 14) {
     headFont -= 2;
     cctx.font = 'bold ' + headFont + 'px ' + FONT;
   }
   cctx.fillText(headText, 2, 37);
   cctx.fillStyle = '#39e75f';
-  cctx.font = 'bold 30px ui-monospace,Menlo,monospace';
-  cctx.fillText(ck, W - ckW - 2, 37);
+  cctx.font = 'bold 32px ui-monospace,Menlo,monospace';
+  cctx.fillText(ck, W4 - ckW - 2, 37);
   /* ticker, directly under the header so it is never cut off */
-  const tickerY = HEADER_D * SCALE;
+  const tickerY = HEADER_D * UNIT;
   cctx.fillStyle = '#ffa02e';
-  cctx.font = 'bold 22px ' + FONT;
+  cctx.font = 'bold 24px ' + FONT;
   const tw = cctx.measureText(tickerText).width;
-  if (tickerOffset === null) tickerOffset = W;
+  if (tickerOffset === null) tickerOffset = W4;
   cctx.fillText(tickerText, tickerOffset, tickerY + 24);
   tickerOffset -= 2;
   if (tickerOffset < -tw) {
@@ -192,11 +219,11 @@ function composeScene(now) {
   }
   /* train rows */
   const blinkOn = Math.floor(now / 530) % 2 === 0;
-  const rowsY = (HEADER_D + TICKER_D) * SCALE;
+  const rowsY = (HEADER_D + TICKER_D) * UNIT;
   const slice = rows.slice(currentSet * setSize, currentSet * setSize + setSize);
   const g = geom();
   slice.forEach((r, i) => {
-    const y0 = rowsY + i * ROW_D * SCALE;
+    const y0 = rowsY + i * ROW_D * UNIT;
     const baseLine = y0 + g.baseLine;
     const [labelJa, labelEn, color] = TYPE_BY_EXT[r.ext] || TYPE_DEFAULT;
     const label = LANG_JA ? labelJa : labelEn;
@@ -212,11 +239,11 @@ function composeScene(now) {
       cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
       statusW = Math.max(g.statusW, cctx.measureText(st).width + 6);
     }
-    const timeEnd = st ? W - statusW - 4 : W - 2;
+    const timeEnd = st ? W4 - statusW - 4 : W4 - 2;
     const timeX = timeEnd - timeW;
     cctx.fillStyle = color;
     cctx.beginPath();
-    cctx.roundRect(2, y0 + 4, g.chipW, g.chipH, 8);
+    cctx.roundRect(2, y0 + 3, g.chipW, g.chipH, 8);
     cctx.fill();
     cctx.fillStyle = '#ffffff';
     /* Shrink the chip label until it fits (mainly for English words). */
@@ -230,14 +257,18 @@ function composeScene(now) {
     cctx.fillText(label, 2 + (g.chipW - lw) / 2, y0 + g.chipBase);
     cctx.fillStyle = '#ffb03a';
     cctx.font = 'bold ' + g.destFont + 'px ' + FONT;
+    /* A breath of letter spacing keeps neighbouring glyphs from
+       fusing into one blob at dot resolution. */
+    cctx.letterSpacing = '1px';
     cctx.fillText(fitText(destName(r.name), timeX - g.destX - 8), g.destX, baseLine);
+    cctx.letterSpacing = '0px';
     cctx.fillStyle = '#39e75f';
     cctx.font = 'bold ' + g.timeFont + 'px ui-monospace,Menlo,monospace';
     cctx.fillText(t, timeX, baseLine);
     if (st) {
       cctx.fillStyle = sc;
       cctx.font = 'bold ' + g.statusFont + 'px ' + FONT;
-      cctx.fillText(st, W - 2 - cctx.measureText(st).width, baseLine);
+      cctx.fillText(st, W4 - 2 - cctx.measureText(st).width, baseLine);
     }
   });
 }
@@ -266,9 +297,18 @@ function draw(now) {
   for (let dy = 0; dy < hDots; dy++) {
     for (let dx = 0; dx < COLS; dx++) {
       const px = dx + dy * COLS;
-      if (img[px * 4 + 3] <= 84) continue;
+      if (img[px * 4 + 3] <= 105) continue;
       lit[px] = 1;
-      dotKey[px] = (img[px * 4] << 16) | (img[px * 4 + 1] << 8) | img[px * 4 + 2];
+      /* Snap to the nearest palette colour (see PALETTE): mixed edge
+         colours are what made glyphs — above all the chip labels —
+         melt; the majority colour in the cell wins. */
+      const r8 = img[px * 4], g8 = img[px * 4 + 1], b8 = img[px * 4 + 2];
+      let best = PALETTE[0], bestD = Infinity;
+      for (const p of PALETTE) {
+        const d = (r8 - p[0]) * (r8 - p[0]) + (g8 - p[1]) * (g8 - p[1]) + (b8 - p[2]) * (b8 - p[2]);
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      dotKey[px] = (best[0] << 16) | (best[1] << 8) | best[2];
     }
   }
   for (let dy = 1; dy < hDots - 1; dy++) {
