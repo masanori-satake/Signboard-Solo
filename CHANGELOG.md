@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.5] - 2026-11-14
+
+- Fixed the LED announcement line going blank after board rebuilds: the rebuild recreates the ticker's scroll element, but the 1.9.4 render cache skipped writing into it whenever the text was unchanged. The cache is now invalidated on rebuilds. Same fix as Signboard-Duo 1.0.8
+- LED テロップが盤面の再構築のあと消えてしまう問題を修正：再構築でテロップのスクロール要素が作り直されるのに、1.9.4 の描画キャッシュが「文面が同じなら描かない」と判断して新しい要素が空のままになっていた。再構築時にキャッシュを無効化する。Signboard-Duo 1.0.8 と共通の修正
+
 ## [1.9.4] - 2026-11-14
 
 - LED board: the line name in the announcement line now stands out in the accent colour and blinks once a second, and the announcement scrolls smoothly — time-based speed, and no restart when the board state refreshes. Same ticker work as Signboard-Duo 1.0.7

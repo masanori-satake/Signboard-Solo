@@ -126,6 +126,10 @@ function buildAll() {
   textLayer.appendChild(tickerEl);
   tickerEl.appendChild(pagesEl);
   buildRows();
+  /* The scroll span above was just recreated (empty): the
+     signature cache must not skip this render, or the ticker
+     stays blank whenever its text is unchanged. */
+  lastTickerSig = '';
   renderTickerText();
 }
 
