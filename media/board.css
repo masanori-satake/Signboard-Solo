@@ -39,6 +39,9 @@ body {
 
 /* 7-segment header clock */
 .clock { margin-left: auto; display: inline-flex; align-items: center; gap: 2px; }
+/* At mini width the title + clock no longer fit side by side; rather
+   than clipping the clock's left digits, it hides entirely. */
+.board[data-tier="mini"] .clock { display: none; }
 .seg-digit { position: relative; width: 11px; height: 19px; flex: none; }
 .seg { position: absolute; background: #2b130e; border-radius: 2px; }
 .seg.on { background: #ff6a33; box-shadow: 0 0 7px rgba(255, 106, 51, .75); }
@@ -105,8 +108,11 @@ body {
 .row.st-cancelled .cells.remark .cell { color: var(--red); font-weight: 700; }
 .row.st-cancelled .cells.name { opacity: .55; }
 
-.board-foot { display: flex; gap: 14px; padding-top: 8px; color: #6f6f79; font-size: 11px; letter-spacing: .14em; min-height: 22px; }
+.board-foot { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 8px; color: #6f6f79; font-size: 11px; letter-spacing: .14em; min-height: 22px; }
 #pageInfo { color: var(--amber); font-family: ui-monospace, Menlo, Consolas, monospace; }
+/* Footer items wrap as whole units, never mid-token ("PAGE 1 /" over
+   "10" reads as two fragments). */
+#pageInfo, #fetchInfo { white-space: nowrap; }
 
 /* Colour themes (body[data-theme], switched by the title-bar button):
    the 7-segment clock carries the theme. */

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.1] - 2026-11-14
+
+- Flap board: at mini panel width the 7-segment header clock now hides entirely instead of clipping its left digits (title + clock no longer fit side by side there). The footer items (page info, last-updated) now wrap as whole units and never split mid-token across lines
+- フラップ盤面：最小幅（mini）では、右上の7セグ時計が左の桁から見切れる代わりに丸ごと非表示になるようにした（タイトルと時計が横に並びきらないため）。フッターのページ数と最終更新は、途中で割れずに項目ごと折り返すようにした
+
 ## [1.9.0] - 2026-11-14
 
 - Colour themes: a new title-bar button cycles Solo (default) / Lime / Ice — the same switcher as Signboard-Duo. On the flap board the 7-segment clock takes the theme colour; on the LED board the destination, header, ticker and page dots do. The mode toggle stays at the right edge of the title bar. The choice is remembered
