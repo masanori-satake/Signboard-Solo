@@ -8,6 +8,9 @@
 "view.name": "Signboard",
 "command.showLed.title": "LED表示に切り替え",
 "command.showFlap.title": "フラップ表示に切り替え",
+"command.cycleMode.title": "盤面スタイルを切り替え",
+"command.cycleModeFlap.title": "盤面スタイルを切り替え",
+"command.cycleModeLed.title": "盤面スタイルを切り替え",
 "config.ledPitch.description": "LED盤面のドット間隔（px、マスク方式）。大きいほどドットが粗くなります。",
 "config.ledHole.description": "LED盤面の穴の大きさ（ドット間隔に対する％）。大きいほど文字が見える割合が増えます。",
 "config.ledGlow.description": "LED盤面の文字の後ろに、柔らかなにじみ（グロー）を付けます。"

@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.7] - 2026-11-14
+
+- The view-title mode button now follows Signboard-Duo's convention: its glyph names the board currently on screen (flight = flap board, dashboard = LED) and pressing it switches to the other board, instead of naming the destination. The direct Show LED / Show flap commands remain available from the Command Palette
+
+- ビュータイトルのモードボタンを Signboard-Duo の方式に合わせた：グリフは切り替え先ではなく現在の盤面を示し（離陸＝フラップ盤面、ダッシュボード＝LED 盤面）、押すともう一方へ切り替わる。LED／フラップを直接選ぶコマンドはコマンドパレットに残した
+
 ## [1.9.6] - 2026-11-14
 
 - Hardening pass (no behaviour changes, one invisible fix): typing in an already-dirty editor no longer pushes a full board update per keystroke — only the clean-to-dirty transition does; tab operations and startup stat bursts fold into a single update; the one-second polling tick is replaced by a timer that wakes exactly when an arrival window ends, so an idle board costs nothing; the LED ticker no longer forces a layout measurement 20 times a second; a tab closed and reopened within the linger window no longer appears twice (live row plus its CANCELLED ghost); untitled editors now follow label changes; dead code removed

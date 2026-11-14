@@ -1,6 +1,6 @@
 # Signboard-Solo
 
-[![Version](https://img.shields.io/badge/version-v1.9.6-blue.svg)](package.json)
+[![Version](https://img.shields.io/badge/version-v1.9.7-blue.svg)](package.json)
 [![Visual Studio Marketplace](https://vsmarketplacebadges.dev/version/masanori-satake.signboard-solo.svg?label=Marketplace&color=blue)](https://marketplace.visualstudio.com/items?itemName=masanori-satake.signboard-solo)
 [![Open VSX](https://img.shields.io/open-vsx/v/masanori-satake/signboard-solo?label=Open%20VSX)](https://open-vsx.org/extension/masanori-satake/signboard-solo)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/masanori-satake/Signboard-Solo)](https://github.com/masanori-satake/Signboard-Solo/releases)
@@ -18,7 +18,7 @@
 
 It does nothing useful, on purpose. There is nothing to click and nothing to accomplish: the board just flaps and glows, quietly, whenever your files change, in the corner of your vision while you work. Because the rows are your own tabs, the board never repeats itself.
 
-Current version: **v1.9.6**
+Current version: **v1.9.7**
 
 ---
 
@@ -59,7 +59,7 @@ Current version: **v1.9.6**
    - The board is a section **inside the Explorer**, next to the file tree — not a separate activity-bar panel you have to visit. Drag its header to the secondary side bar or the panel if you want it somewhere else; VS Code remembers the placement.
 
 4. **Two Modes, One Data Layer**
-   - A title-bar button on the Signboard view switches between the flap board and the LED board (only the mode you can switch *to* is shown).
+   - A title-bar button on the Signboard view switches between the flap board and the LED board; the button shows the mode currently on screen (the flight glyph for the flap board, the dashboard glyph for LED), as in Signboard-Duo.
    - With `signboard.mode` set to `auto`, the board follows the view width: flap below 520px, LED at 520px and wider.
 
 5. **Local First / Privacy First / No AI**
@@ -94,7 +94,7 @@ For VSCodium, Gitpod, Eclipse Theia, or environments configured with Open VSX:
 #### Method 3: Install from VSIX Package File (Offline / Manual)
 
 1. Go to the [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) page.
-2. Download the `.vsix` file (e.g., `signboard-solo-1.9.6.vsix`) under Assets.
+2. Download the `.vsix` file (e.g., `signboard-solo-1.9.7.vsix`) under Assets.
 3. In VS Code Extensions view (`Ctrl+Shift+X`), click the **"..." (Views and More Actions)** icon at the top right, select **Install from VSIX...**, and choose the downloaded file.
 
 ---
@@ -112,7 +112,7 @@ Open the **Explorer** and expand the **Signboard** section. That is all — the 
 - **Reorder tabs** → the board reorders with them.
 
 #### 3. Switch the display mode
-- Click the title-bar button on the Signboard view: the flight-takeoff button switches to the flap board, the dashboard button to the LED board. The choice is saved to `signboard.mode`.
+- Click the title-bar button on the Signboard view: its glyph names the board you are looking at (flight = flap board, dashboard = LED), and clicking switches to the other board. The choice is saved to `signboard.mode`.
 - Or set `signboard.mode` directly: `flap` / `led` / `auto` (auto switches by view width, at 520px).
 
 #### 4. Move it somewhere else
@@ -128,7 +128,7 @@ Drag the **Signboard** section header to the secondary side bar (right side) or 
 | **Show LED board** | `signboard.showLed` | Switch the Signboard view to the station LED board (also writes `signboard.mode`) |
 | **Show flap board** | `signboard.showFlap` | Switch the Signboard view to the split-flap board (also writes `signboard.mode`) |
 
-Only the command for the mode you can switch *to* appears in the view title bar; both are available from the Command Palette.
+The view title bar shows the current mode's button (Switch Board Style); the direct Show commands are available from the Command Palette.
 
 ---
 
@@ -199,7 +199,7 @@ npm run update-version <X.Y.Z>
 
 実用性はありません。それが目的です。クリックするものも、達成するものもなく、ファイルが変わるたびに盤面が静かにパタパタ／発光するだけです。行の中身は自分のタブなので、盤面が同じ状態を繰り返すことはまずありません。
 
-現在のバージョン: **v1.9.6**
+現在のバージョン: **v1.9.7**
 
 ---
 
@@ -240,7 +240,7 @@ npm run update-version <X.Y.Z>
    - 盤面は専用のアクティビティバーパネルではなく、**エクスプローラーの中のセクション**です。「見に行く場所」ではなく「視界の端で動くもの」として置かれます。セクションの見出しを右サイドバーやパネルへドラッグすれば移動でき、配置は保持されます。
 
 4. **2モード・1データ層**
-   - Signboard ビューのタイトルバーのボタンで、フラップ盤面と LED 盤面を切り替えます（表示されるのは切り替え先のボタンだけです）。
+   - Signboard ビューのタイトルバーのボタンで、フラップ盤面と LED 盤面を切り替えます（ボタンには現在の盤面が表示されます。Signboard-Duo と同じ方式です）。
    - `signboard.mode` を `auto` にすると、ビューの幅で切り替わります（520px未満はフラップ、520px以上は LED）。
 
 5. **ローカルファースト・プライバシーファースト・AI不使用**
@@ -277,7 +277,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 #### 方法 3: VSIX パッケージファイルからのインストール（オフライン環境等）
 
 1. 本リポジトリの [GitHub Releases](https://github.com/masanori-satake/Signboard-Solo/releases) ページにアクセスします。
-2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.9.6.vsix`）をダウンロードします。
+2. 最新リリースの **Assets** セクションから、`.vsix` ファイル（例: `signboard-solo-1.9.7.vsix`）をダウンロードします。
 3. VS Code の拡張機能ビュー（`Ctrl+Shift+X` / `Cmd+Shift+X`）を開き、右上の **「...」（その他の操作）アイコン** をクリックして **「VSIX からのインストール... (Install from VSIX...)」** を選択し、ダウンロードしたファイルを選んでください。
 
 ---
@@ -295,7 +295,7 @@ VSCodium や Gitpod、Eclipse Theia など Open VSX を利用する環境の場�
 - **タブを並べ替える** → 盤面も一緒に並べ替わります。
 
 #### 3. 表示モードを切り替える
-- Signboard ビューのタイトルバーのボタンを押します。離陸グリフのボタンがフラップ盤面へ、ダッシュボードのボタンが LED 盤面への切り替えです。選択は `signboard.mode` に保存されます。
+- Signboard ビューのタイトルバーのボタンを押します。グリフは現在の盤面を示し（離陸＝フラップ盤面、ダッシュボード＝LED 盤面）、押すともう一方へ切り替わります。選択は `signboard.mode` に保存されます。
 - 設定を直接書くこともできます： `flap` / `led` / `auto`（auto は幅 520px で切り替わります）。
 
 #### 4. 置き場所を変える

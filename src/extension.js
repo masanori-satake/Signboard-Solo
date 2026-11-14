@@ -218,6 +218,18 @@ class BoardProvider {
     this.theme = context.globalState.get('soloTheme', 'solo');
   }
 
+  /* One button, labelled by the mode on screen (its glyph is the
+     current mode's, as in Signboard-Duo): pressing it advances to
+     the next style. The per-mode commands exist so the view title
+     can show the current mode's glyph. */
+  cycleMode() {
+    const order = ['flap', 'led'];
+    const labels = { flap: 'Split-Flap', led: 'LED' };
+    const next = order[(order.indexOf(this.effectiveMode()) + 1) % order.length];
+    vscode.window.setStatusBarMessage(`Signboard board: ${labels[next]}`, 2500);
+    setMode(next);
+  }
+
   cycleTheme() {
     const order = ['solo', 'lime', 'ice'];
     const labels = { solo: 'Solo', lime: 'Lime', ice: 'Ice' };
@@ -384,6 +396,7 @@ ${autoScript}${ledScript}<script nonce="${nonce}" src="${js}"></script>
 function syncModeContext(effectiveMode) {
   const mode = effectiveMode || vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
   vscode.commands.executeCommand('setContext', 'signboard.isLed', mode === 'led');
+  vscode.commands.executeCommand('setContext', 'signboard.isFlap', mode === 'flap');
 }
 
 async function setMode(next) {
@@ -410,6 +423,9 @@ function activate(context) {
     vscode.commands.registerCommand('signboard.showLed', () => setMode('led')),
     vscode.commands.registerCommand('signboard.showFlap', () => setMode('flap')),
     vscode.commands.registerCommand('signboard.cycleTheme', () => provider.cycleTheme()),
+    vscode.commands.registerCommand('signboard.cycleMode', () => provider.cycleMode()),
+    vscode.commands.registerCommand('signboard.cycleModeFlap', () => provider.cycleMode()),
+    vscode.commands.registerCommand('signboard.cycleModeLed', () => provider.cycleMode()),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('signboard.mode')) syncModeContext(provider.effectiveMode());
     })

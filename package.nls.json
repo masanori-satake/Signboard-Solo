@@ -8,6 +8,9 @@
 "view.name": "Signboard",
 "command.showLed.title": "Show LED board",
 "command.showFlap.title": "Show flap board",
+"command.cycleMode.title": "Switch Board Style",
+"command.cycleModeFlap.title": "Switch Board Style",
+"command.cycleModeLed.title": "Switch Board Style",
 "config.ledPitch.description": "LED board dot pitch in px (mask method). Larger values make the dots coarser.",
 "config.ledHole.description": "LED board hole size, as a percentage of the dot pitch. Larger holes let more of each letter show.",
 "config.ledGlow.description": "Add a soft glow (light bleed) behind the LED board's letters."
