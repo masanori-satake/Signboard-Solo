@@ -102,6 +102,10 @@ body {
 .cell.remark-plate { width: 112px; font-size: 12px; letter-spacing: .08em; font-family: inherit; }
 .board[data-tier="narrow"] .cell.remark-plate,
 .board[data-tier="mini"] .cell.remark-plate { width: 82px; font-size: 13px; letter-spacing: .2em; }
+/* When the meta line is too narrow for time + plate, the plate hides
+   entirely instead of clipping at the board's right edge (the board
+   measures the plate's right edge every render — see board.js). */
+.board.no-plate .cell.remark-plate { visibility: hidden; }
 .cells.remark .cell { color: #cfcfd6; }
 .row.st-arrived .cells.remark .cell { color: var(--green); }
 .row.st-delayed .cells.remark .cell { color: var(--amber); }

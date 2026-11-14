@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.2] - 2026-11-14
+
+- Flap board: the remark plate now hides entirely when the panel is too narrow for it to fit, instead of staying half-clipped at the right edge. The board measures the plate's right edge against the rows area on every render and hides it the moment it would cross. Same fix as Signboard-Duo 0.7.7
+- フラップ盤面：備考プレートが、幅が足りないときに右端で半分切れたまま残らず、丸ごと非表示になるようにした。描画のたびにプレートの右端と行エリアの右端を実測して比べ、はみ出す時点で隠す。Signboard-Duo 0.7.7 と共通の修正
+
 ## [1.9.1] - 2026-11-14
 
 - Flap board: at mini panel width the 7-segment header clock now hides entirely instead of clipping its left digits (title + clock no longer fit side by side there). The footer items (page info, last-updated) now wrap as whole units and never split mid-token across lines

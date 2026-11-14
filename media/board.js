@@ -241,6 +241,14 @@ function render(pageChanged) {
     measuredRowH = firstRow.offsetHeight;
     if (rowsPerPage() !== per) { render(pageChanged); return; }
   }
+  // If the remark plate's right edge passes the rows area's right
+  // edge, the plate would clip — hide it entirely instead. Geometry
+  // is visibility-independent, so this cannot oscillate.
+  const plateEl = rowsEl.querySelector('.remark-plate');
+  if (plateEl) {
+    const over = plateEl.getBoundingClientRect().right > rowsEl.getBoundingClientRect().right + 1;
+    boardEl.classList.toggle('no-plate', over);
+  }
   document.getElementById('pageInfo').textContent = pg > 1 ? 'PAGE ' + (currentPage + 1) + ' / ' + pg : '';
   document.getElementById('flightCount').textContent = rows.length
     ? (LANG_JA ? rows.length + ' 便' : rows.length + (rows.length === 1 ? ' FLIGHT' : ' FLIGHTS')) : '';
