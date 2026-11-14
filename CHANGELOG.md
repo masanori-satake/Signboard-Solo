@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.4] - 2026-11-14
+
+- LED board: the line name in the announcement line now stands out in the accent colour and blinks once a second, and the announcement scrolls smoothly — time-based speed, and no restart when the board state refreshes. Same ticker work as Signboard-Duo 1.0.7
+- LED 盤面：テロップの線名をアクセント色で表示し、1秒ごとに点滅するようにした。あわせてスクロールを滑らかにした（時間ベースの速度にし、状態が更新されても巻き戻らない）。Signboard-Duo 1.0.7 と共通のテロップ改善
+
 ## [1.9.3] - 2026-11-14
 
 - LED board: the announcement line is now bottom-aligned to the board area, and the page dots ride on the announcement row instead of overlapping its text. Same fix as Signboard-Duo 1.0.5

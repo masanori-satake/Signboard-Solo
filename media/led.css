@@ -56,6 +56,11 @@ body {
   display: flex; align-items: center; gap: .6em;
 }
 .ticker .scroll { display: inline-block; will-change: transform; flex: 1 1 auto; min-width: 0; }
+/* Ticker highlights: the variable parts of the greeting (line name,
+   arrived count, last-fetched time) in the accent colour, blinking
+   once a second. */
+.ticker .tick-hi { color: var(--acc); animation: tick-blink 2s steps(1, end) infinite; }
+@keyframes tick-blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 .mask {
   position: absolute; inset: 0; pointer-events: none;
   background-image: radial-gradient(circle at center,
