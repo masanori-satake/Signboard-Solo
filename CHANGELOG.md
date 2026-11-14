@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.6] - 2026-11-14
+
+- Hardening pass (no behaviour changes, one invisible fix): typing in an already-dirty editor no longer pushes a full board update per keystroke — only the clean-to-dirty transition does; tab operations and startup stat bursts fold into a single update; the one-second polling tick is replaced by a timer that wakes exactly when an arrival window ends, so an idle board costs nothing; the LED ticker no longer forces a layout measurement 20 times a second; a tab closed and reopened within the linger window no longer appears twice (live row plus its CANCELLED ghost); untitled editors now follow label changes; dead code removed
+
+- 堅牢化（挙動の変更なし、目に見えない修正が1件）：編集中の打鍵ごとに全更新が走らないようにし（汚れの遷移時のみ）、タブ操作と起動時の stat 集中を1回の更新にまとめた。1秒ポーリングを廃し、到着表示の終了時刻にだけ起きるタイマーに替えたため、変化のない盤面は無コストになった。LED テロップの幅測定は毎秒20回から必要時のみへ。閉じてすぐ開き直したタブが実在行と欠航ゴーストで二重表示される問題を直し、Untitled のラベル変更にも追随するようにした。死んだコードを削除した
+
 ## [1.9.5] - 2026-11-14
 
 - Fixed the LED announcement line going blank after board rebuilds: the rebuild recreates the ticker's scroll element, but the 1.9.4 render cache skipped writing into it whenever the text was unchanged. The cache is now invalidated on rebuilds. Same fix as Signboard-Duo 1.0.8

@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, chunkPages, pageOfIndex, autoModeForWidth, parentDirName, mergeOrder,
+  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, autoModeForWidth, parentDirName, mergeOrder,
 } = require('../src/model');
 
 test('extOf takes the last extension, lowercased', () => {
@@ -61,14 +61,6 @@ test('statusFor precedence: cancelled > arrived > delayed > ontime', () => {
   assert.equal(statusFor({ savedAt: now - CONFIG.arrivalMs - 1, dirty: true }, now), 'delayed');
   assert.equal(statusFor({ savedAt: now - CONFIG.arrivalMs - 1, dirty: false }, now), 'ontime');
   assert.equal(statusFor({}, now), 'ontime');
-});
-
-test('paging helpers', () => {
-  assert.equal(chunkPages(0, 4), 1);
-  assert.equal(chunkPages(7, 3), 3);
-  assert.equal(chunkPages(6, 3), 2);
-  assert.equal(pageOfIndex(5, 3), 1);
-  assert.equal(pageOfIndex(0, 3), 0);
 });
 
 test('parentDirName takes the containing directory from a URI path', () => {

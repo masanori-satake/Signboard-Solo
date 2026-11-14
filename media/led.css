@@ -81,6 +81,5 @@ body[data-theme="lime"] { --dest: #7dff8a; --acc: #b6ffb0; --tick: #ffb000; --do
 body[data-theme="ice"] { --dest: #a8d8ff; --acc: #cfe6ff; --tick: #a8ffb0; --dot: #a8d8ff; }
 .row .dest { color: var(--dest); }
 .head .ttl { color: var(--dest); }
-.platform-row { color: var(--acc); }
 .ticker { color: var(--tick); }
 .pages i.on { background: var(--dot); }

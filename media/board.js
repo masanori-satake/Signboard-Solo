@@ -346,20 +346,22 @@ for (let i = 0; i < 8; i++) {
     clockDigits.push(dig);
   }
 }
+const clockSegs = clockDigits.map((dig) => [...dig.querySelectorAll('.seg')]);
+const clockDots = [...clockEl.querySelectorAll('.cdot')];
 function tickClock() {
   const d = new Date();
   const parts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((v) => String(v).padStart(2, '0')).join('');
   [...parts].forEach((ch, i) => {
     const on = SEG_MAP[ch];
-    clockDigits[i].querySelectorAll('.seg').forEach((seg) => {
+    clockSegs[i].forEach((seg) => {
       const name = [...seg.classList].find((c) => c.startsWith('seg-')).slice(4);
       seg.classList.toggle('on', on.includes(name));
     });
   });
   const blink = d.getSeconds() % 2 === 0;
-  clockEl.querySelectorAll('.cdot').forEach((c) => c.classList.toggle('on', blink));
+  clockDots.forEach((c) => c.classList.toggle('on', blink));
 }
-setInterval(tickClock, 1000);
+setInterval(() => { if (!document.hidden) tickClock(); }, 1000);
 tickClock();
 
 computeTier();
