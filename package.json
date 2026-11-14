@@ -122,7 +122,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.9.2",
+  "version": "1.9.3",
   "icon": "icon.png",
   "repository": {
     "type": "git",

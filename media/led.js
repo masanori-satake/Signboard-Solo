@@ -120,6 +120,7 @@ function buildAll() {
   tickerEl = el('div', 'ticker');
   tickerEl.appendChild(el('span', 'scroll'));
   textLayer.appendChild(tickerEl);
+  tickerEl.appendChild(pagesEl);
   buildRows();
   renderTickerText();
 }

@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.3] - 2026-11-14
+
+- LED board: the announcement line is now bottom-aligned to the board area, and the page dots ride on the announcement row instead of overlapping its text. Same fix as Signboard-Duo 1.0.5
+- LED 盤面：テロップ行を盤面エリアに対して下寄せにし、ページドットをテロップ行に載せて文字と重ならないようにした。Signboard-Duo 1.0.5 と共通の修正
+
 ## [1.9.2] - 2026-11-14
 
 - Flap board: the remark plate now hides entirely when the panel is too narrow for it to fit, instead of staying half-clipped at the right edge. The board measures the plate's right edge against the rows area on every render and hides it the moment it would cross. Same fix as Signboard-Duo 0.7.7
