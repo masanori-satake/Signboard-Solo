@@ -263,6 +263,7 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     setLocale(msg.lang);
+    document.body.dataset.theme = msg.theme || 'solo';
     const before = prevByKey;
     rows = msg.rows || [];
     // If a just-saved or just-cancelled row sits on another page, jump to it.

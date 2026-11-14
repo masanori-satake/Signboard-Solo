@@ -107,3 +107,12 @@ body {
 
 .board-foot { display: flex; gap: 14px; padding-top: 8px; color: #6f6f79; font-size: 11px; letter-spacing: .14em; min-height: 22px; }
 #pageInfo { color: var(--amber); font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+/* Colour themes (body[data-theme], switched by the title-bar button):
+   the 7-segment clock carries the theme. */
+:root { --clock-on: #ff6a33; --clock-glow: rgba(255, 106, 51, .75); --clock-off: #2b130e; }
+body[data-theme="lime"] { --clock-on: #3ddc68; --clock-glow: rgba(61, 220, 104, .7); --clock-off: #0d2317; }
+body[data-theme="ice"] { --clock-on: #a8d8ff; --clock-glow: rgba(168, 216, 255, .7); --clock-off: #121e2a; }
+.seg { background: var(--clock-off); }
+.seg.on { background: var(--clock-on); box-shadow: 0 0 7px var(--clock-glow); }
+.cdot.on { background: var(--clock-on); box-shadow: 0 0 7px var(--clock-glow); }

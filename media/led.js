@@ -227,6 +227,7 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     LANG_JA = String(msg.lang || '').toLowerCase().startsWith('ja');
+    document.body.dataset.theme = msg.theme || 'solo';
     lineName = msg.line || '';
     if (tickerMode === 'loop' && tickerText !== defaultTicker()) {
       // The line changed (a different first file): restart the greeting

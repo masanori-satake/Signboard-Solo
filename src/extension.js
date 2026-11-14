@@ -185,6 +185,17 @@ class BoardProvider {
     this.tick = null;
     this.autoRenderer = 'flap';
     this.onRendererChange = null;
+    this.theme = context.globalState.get('soloTheme', 'solo');
+  }
+
+  cycleTheme() {
+    const order = ['solo', 'lime', 'ice'];
+    const labels = { solo: 'Solo', lime: 'Lime', ice: 'Ice' };
+    const next = order[(order.indexOf(this.theme) + 1) % order.length];
+    this.theme = next;
+    this.context.globalState.update('soloTheme', next);
+    vscode.window.setStatusBarMessage(`Signboard theme: ${labels[next]}`, 2500);
+    this.push(true);
   }
 
   resolveWebviewView(view) {
@@ -243,8 +254,8 @@ class BoardProvider {
     if (!this.view || !this.view.visible) return;
     const rows = this.data.rows();
     const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
-    const payload = { type: 'state', rows, lang: vscode.env.language, mode, line: this.data.lineName() };
-    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang + '|' + payload.line;
+    const payload = { type: 'state', rows, lang: vscode.env.language, mode, line: this.data.lineName(), theme: this.theme };
+    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang + '|' + payload.line + '|' + this.theme;
     if (!force && signature === this.lastSignature) return;
     this.lastSignature = signature;
     // A just-saved or just-cancelled row is the one worth watching: tell the
@@ -342,6 +353,7 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand('signboard.showLed', () => setMode('led')),
     vscode.commands.registerCommand('signboard.showFlap', () => setMode('flap')),
+    vscode.commands.registerCommand('signboard.cycleTheme', () => provider.cycleTheme()),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('signboard.mode')) syncModeContext();
     })

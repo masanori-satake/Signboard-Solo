@@ -66,3 +66,14 @@ body {
 .pages { position: absolute; right: .45em; bottom: .3em; display: flex; gap: 6px; }
 .pages i { width: 5px; height: 5px; border-radius: 50%; background: #3a3a40; display: block; }
 .pages i.on { background: #ffb03a; }
+
+/* Colour themes (body[data-theme], switched by the title-bar button):
+   destination, header, ticker and page dots take the theme colours. */
+:root { --dest: #ffb000; --acc: #ffd76a; --tick: #33ff99; --dot: #ffb03a; }
+body[data-theme="lime"] { --dest: #7dff8a; --acc: #b6ffb0; --tick: #ffb000; --dot: #3ddc68; }
+body[data-theme="ice"] { --dest: #a8d8ff; --acc: #cfe6ff; --tick: #a8ffb0; --dot: #a8d8ff; }
+.row .dest { color: var(--dest); }
+.head .ttl { color: var(--dest); }
+.platform-row { color: var(--acc); }
+.ticker { color: var(--tick); }
+.pages i.on { background: var(--dot); }

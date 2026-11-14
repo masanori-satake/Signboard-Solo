@@ -3,6 +3,11 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.9.0] - 2026-11-14
+
+- Colour themes: a new title-bar button cycles Solo (default) / Lime / Ice — the same switcher as Signboard-Duo. On the flap board the 7-segment clock takes the theme colour; on the LED board the destination, header, ticker and page dots do. The mode toggle stays at the right edge of the title bar. The choice is remembered
+- 配色テーマ：タイトルバーのボタンで Solo（既定）／ライム／アイス を切り替えられるようにした（Signboard-Duo と同じ仕組み）。フラップは7セグ時計が、LED は行先・見出し・テロップ・ページ点がテーマ色になる。モード切替ボタンはタイトルバーの右端のまま。選択は記憶される
+
 ## [1.8.3] - 2026-11-13
 
 - LED board: the default dot pitch (`signboard.ledPitch`) is now 3px, down from the mask prototype's 5px — finer dots read better in real use. The setting's range (3–12) is unchanged, so a coarser pitch is still one setting away.

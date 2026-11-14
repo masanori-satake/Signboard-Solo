@@ -2,7 +2,8 @@
   "activationEvents": [
     "onView:signboard.board",
     "onCommand:signboard.showLed",
-    "onCommand:signboard.showFlap"
+    "onCommand:signboard.showFlap",
+    "onCommand:signboard.cycleTheme"
   ],
   "categories": [
     "Other"
@@ -69,19 +70,29 @@
           "light": "media/flight-light.svg",
           "dark": "media/flight-dark.svg"
         }
+      },
+      {
+        "command": "signboard.cycleTheme",
+        "title": "Signboard: Switch Colour Theme",
+        "icon": "$(symbol-color)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "signboard.cycleTheme",
+          "when": "view == signboard.board",
+          "group": "navigation@1"
+        },
+        {
           "command": "signboard.showLed",
           "when": "view == signboard.board && !signboard.isLed",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "signboard.showFlap",
           "when": "view == signboard.board && signboard.isLed",
-          "group": "navigation"
+          "group": "navigation@2"
         }
       ]
     }
@@ -111,7 +122,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.8.3",
+  "version": "1.9.0",
   "icon": "icon.png",
   "repository": {
     "type": "git",
