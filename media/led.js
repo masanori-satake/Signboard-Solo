@@ -36,16 +36,17 @@ let LANG_JA = false;
    file tab. The greeting thanks riders of that line, like a real station
    board; with no file open it falls back to the Signboard name. */
 let lineName = '';
-function defaultTicker() {
+function defaultTickerSegs() {
   if (!LANG_JA) {
     return lineName
-      ? 'Thank you for riding the ' + lineName + ' Line today. This board shows your open tabs.'
-      : 'Thank you for using Signboard today. This board shows your open tabs.';
+      ? [{ t: 'Thank you for riding the ' }, { t: lineName + ' Line', hi: 1 }, { t: ' today. This board shows your open tabs.' }]
+      : [{ t: 'Thank you for using ' }, { t: 'Signboard', hi: 1 }, { t: ' today. This board shows your open tabs.' }];
   }
   return lineName
-    ? '本日も ' + lineName + '線 をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。'
-    : '本日も Signboard をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。';
+    ? [{ t: '本日も ' }, { t: lineName + '線', hi: 1 }, { t: ' をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。' }]
+    : [{ t: '本日も ' }, { t: 'Signboard', hi: 1 }, { t: ' をご利用くださいまして、ありがとうございます。　この案内板は、開いているタブを表示しています。' }];
 }
+function segsText(segs) { return segs.map((sg) => sg.t).join(''); }
 
 function stripExt(n) { const i = n.lastIndexOf('.'); return i > 0 ? n.slice(0, i) : n; }
 function destName(name) { return stripExt(name).toUpperCase(); }
@@ -75,7 +76,11 @@ let currentSet = 0;
 let lastSetChange = Date.now();
 let lastEventAt = 0;
 let setSize = 4;
-let tickerText = defaultTicker();
+let tickerSegs = defaultTickerSegs();
+let lastTickerSig = '';
+let lastTickerKey = '';
+let lastScrollAt = null;
+let tickerW = 0, tickerWKey = '';
 let tickerMode = 'loop';   // 'loop' = greeting scroll, 'once' = announcement pass
 let tickerOffset = 0;
 
@@ -87,7 +92,7 @@ function jumpToKey(key) {
   if (s !== currentSet) { currentSet = s; lastSetChange = Date.now(); buildRows(); }
 }
 function announce(text) {
-  tickerText = text;
+  tickerSegs = [{ t: text }];
   tickerMode = 'once';
   tickerOffset = null; // start off the right edge, measured on next tick
   renderTickerText();
@@ -120,7 +125,12 @@ function buildAll() {
   tickerEl = el('div', 'ticker');
   tickerEl.appendChild(el('span', 'scroll'));
   textLayer.appendChild(tickerEl);
+  tickerEl.appendChild(pagesEl);
   buildRows();
+  /* The scroll span above was just recreated (empty): the
+     signature cache must not skip this render, or the ticker
+     stays blank whenever its text is unchanged. */
+  lastTickerSig = '';
   renderTickerText();
 }
 
@@ -156,10 +166,28 @@ function syncGlow() {
 }
 
 function scrollEls() { return board.querySelectorAll('.ticker .scroll'); }
+function tickerPlatformKey() { return lineName || 'Signboard'; }
 function renderTickerText() {
-  const text = tickerMode === 'loop' ? (tickerText + '　　　').repeat(2) : tickerText + '　　　';
-  scrollEls().forEach((s) => { s.textContent = text; });
-  if (tickerMode === 'loop') tickerOffset = 0;
+  const one = tickerSegs.concat([{ t: '　　' }]);
+  const segs = tickerMode === 'loop' ? one.concat(one) : one;
+  const sig = tickerMode + '|' + segs.map((sg) => (sg.hi ? '*' : '') + sg.t).join('');
+  if (sig !== lastTickerSig) {
+    lastTickerSig = sig;
+    scrollEls().forEach((elm) => {
+      elm.replaceChildren();
+      segs.forEach((seg) => {
+        if (seg.hi) elm.appendChild(el('span', 'tick-hi', seg.t));
+        else elm.appendChild(document.createTextNode(seg.t));
+      });
+    });
+  }
+  /* Restart the scroll only when the line (or mode) changed; state
+     refreshes keep the offset, so the greeting never rewinds. */
+  const key = tickerMode + '|' + tickerPlatformKey();
+  if (key !== lastTickerKey) {
+    lastTickerKey = key;
+    if (tickerMode === 'loop') tickerOffset = 0;
+  }
 }
 
 /* Trains per screen follows the view height, measured from a real
@@ -202,17 +230,28 @@ setInterval(() => {
     /* Measure the text layer's copy: the glow layer may be hidden
        (glow off), and a hidden element reports a width of 0. */
     const main = textLayer.querySelector('.ticker .scroll');
-    const w = main ? main.scrollWidth : 0;
+    /* scrollWidth forces a layout; the width only changes with the
+       ticker content (lastTickerSig) or the panel size, so measure
+       on those changes instead of on every 50 ms tick. */
+    let w = 0;
+    if (main) {
+      const key = board.clientWidth + '|' + lastTickerSig;
+      if (key !== tickerWKey) { tickerW = main.scrollWidth; tickerWKey = key; }
+      w = tickerW;
+    }
     const box = tickerEl;
+    const dt = lastScrollAt == null ? 50 : Math.min(250, Math.max(0, now - lastScrollAt));
+    lastScrollAt = now;
+    const step = 60 * dt / 1000;
     if (tickerMode === 'loop') {
       const half = w / 2;
-      tickerOffset -= 3;
-      if (half > 0 && tickerOffset <= -half) tickerOffset += half;
+      tickerOffset -= step;
+      while (half > 0 && tickerOffset <= -half) tickerOffset += half;
     } else {
       if (tickerOffset === null) tickerOffset = box ? box.clientWidth : 0;
-      tickerOffset -= 3;
+      tickerOffset -= step;
       if (w > 0 && tickerOffset < -w) {
-        tickerText = defaultTicker();
+        tickerSegs = defaultTickerSegs();
         tickerMode = 'loop';
         renderTickerText();
       }
@@ -227,11 +266,12 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     LANG_JA = String(msg.lang || '').toLowerCase().startsWith('ja');
+    document.body.dataset.theme = msg.theme || 'solo';
     lineName = msg.line || '';
-    if (tickerMode === 'loop' && tickerText !== defaultTicker()) {
+    if (tickerMode === 'loop' && segsText(tickerSegs) !== segsText(defaultTickerSegs())) {
       // The line changed (a different first file): restart the greeting
       // (buildAll below re-renders the ticker text).
-      tickerText = defaultTicker();
+      tickerSegs = defaultTickerSegs();
     }
     const before = prevByKey;
     rows = msg.rows || [];
