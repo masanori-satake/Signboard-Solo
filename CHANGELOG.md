@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.2] - 2026-11-17
+
+- Documentation only (no behaviour change): a source comment still described the title-bar mode button with the pre-1.10.0 convention ("the glyph shows the current mode"), the opposite of what 1.10.0 shipped. Corrected so the code, the changelog and the actual buttons tell the same story. Found in the audit that followed Signboard-Duo's hardening pass; the rest of that checklist (value clamps, change detection, error containment) was verified as already in place on the Solo side — the LED renderer clamps its own parameters, pushes are event-driven with a precise wake timer instead of polling, and there is no network, parser or token surface to harden.
+
+- ドキュメントのみの更新（挙動の変更なし）：タイトルバーのモードボタンについて、ソースのコメントが 1.10.0 以前の方式（「グリフは現在の盤面を示す」）のまま残っており、出荷した実装と逆の説明になっていました。コード・変更履歴・実際のボタンが同じ内容を語るよう直しました。Signboard-Duo の堅牢化に続く監査で発見したものです。同監査の他の確認項目（値のクランプ、変更検知、エラーの包含）は Solo 側では既に備わっていることを確認しました——LED のパラメータは描画側で範囲に収め、盤面の更新はポーリングではなくイベント駆動＋精密な起床タイマーで、ネットワーク・パーサ・トークンの面自体がありません。
+
 ## [1.10.1] - 2026-11-17
 
 - Version bookkeeping only (no changes to the extension): the restore commit that followed 1.10.0 (fddeac7, repairing a staging error in the 1.10.0 commit) touched packaged files without a version bump, which the repository's bump check rejects. This patch restores a green check on `main`; 1.10.0 remains the current release

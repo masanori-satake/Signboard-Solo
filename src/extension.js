@@ -218,10 +218,11 @@ class BoardProvider {
     this.theme = context.globalState.get('soloTheme', 'solo');
   }
 
-  /* One button, labelled by the mode on screen (its glyph is the
-     current mode's, as in Signboard-Duo): pressing it advances to
-     the next style. The per-mode commands exist so the view title
-     can show the current mode's glyph. */
+  /* One button for both directions: its glyph and tooltip name
+     the board you get when you press it (the destination), never
+     the current state — the convention shared with Signboard-Duo
+     since Solo 1.10.0 / Duo 1.17.0. The per-mode commands exist so
+     the view title can offer each direction separately. */
   cycleMode() {
     const order = ['flap', 'led'];
     const labels = { flap: 'Split-Flap', led: 'LED' };
