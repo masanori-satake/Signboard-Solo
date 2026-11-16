@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.1] - 2026-11-17
+
+- Version bookkeeping only (no changes to the extension): the restore commit that followed 1.10.0 (fddeac7, repairing a staging error in the 1.10.0 commit) touched packaged files without a version bump, which the repository's bump check rejects. This patch restores a green check on `main`; 1.10.0 remains the current release
+
+- バージョン管理のみの更新（拡張機能への変更なし）：1.10.0 の直後の復旧コミット（fddeac7、1.10.0 のコミット時のステージングミスの修復）が、版を上げずにパッケージ包含ファイルへ触れていたため、リポジトリのバンプチェックに抵触していた。本パッチで `main` のチェックを通る状態に戻す。現在のリリースは 1.10.0 のまま
+
 ## [1.10.0] - 2026-11-17
 
 - Title-bar buttons now follow one convention across Signboard-Solo and Signboard-Duo: a button's glyph and tooltip say what happens when you press it, not the current state. The board-style button therefore shows the *next* board's glyph and names it ("Switch to LED Board" / "Switch to Flap Board"), reversing the 1.9.7 choice that showed the board currently on screen
