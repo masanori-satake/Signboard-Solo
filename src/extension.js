@@ -22,10 +22,8 @@ class BoardData {
 
   start(context) {
     const d = (sub) => { this.disposables.push(sub); context.subscriptions.push(sub); };
-    /* VS Code fires both events for most tab operations; fold a
-       burst into a single refresh on the next tick. */
-    d(vscode.window.tabGroups.onDidChangeTabs(() => this.scheduleRefresh()));
-    d(vscode.window.tabGroups.onDidChangeTabGroups(() => this.scheduleRefresh()));
+    d(vscode.window.tabGroups.onDidChangeTabs(() => this.refresh()));
+    d(vscode.window.tabGroups.onDidChangeTabGroups(() => this.refresh()));
     d(vscode.workspace.onDidSaveTextDocument((doc) => {
       const e = this.entries.get(doc.uri.toString());
       if (e) {
@@ -37,21 +35,13 @@ class BoardData {
     }));
     d(vscode.workspace.onDidChangeTextDocument((ev) => {
       const e = this.entries.get(ev.document.uri.toString());
-      /* Typing in an already-dirty document changes nothing the board
-         shows — fire only on the clean -> dirty transition, not on
-         every keystroke. */
-      if (e && ev.document.isDirty && !e.dirty) {
+      if (e && ev.document.isDirty) {
         e.dirty = true;
         e.savedAt = 0; // a new edit ends the arrival moment
         this.onChange('dirty', e.key);
       }
     }));
     this.refresh();
-  }
-
-  scheduleRefresh() {
-    if (this.refreshTimer) return;
-    this.refreshTimer = setTimeout(() => { this.refreshTimer = null; this.refresh(); }, 0);
   }
 
   tabUri(tab) {
@@ -79,9 +69,6 @@ class BoardData {
         const key = uri.toString();
         if (!seen.has(key)) liveOrder.push(key);
         seen.add(key);
-        /* A file reopened inside its linger window is simply back:
-           its CANCELLED ghost must not linger next to the live row. */
-        this.ghosts.delete(key);
         let e = this.entries.get(key);
         if (!e) {
           e = {
@@ -100,9 +87,6 @@ class BoardData {
         }
         e.index = order;
         e.dirty = !!tab.isDirty;
-        /* An untitled editor's label follows its first line of text;
-           file names cannot change under a stable URI, labels can. */
-        if (uri.scheme === 'untitled') e.name = tab.label;
         if (tab.isActive) newActiveKey = key;
         order++;
       }
@@ -183,23 +167,8 @@ class BoardData {
     }));
   }
 
-  /* The next moment a row's status flips on time alone (an arrival
-     window running out). Ghost expiry already has its own timer. */
-  nextArrivalAt() {
-    const now = Date.now();
-    let at = null;
-    for (const e of this.entries.values()) {
-      if (e.savedAt && e.savedAt + CONFIG.arrivalMs > now) {
-        const t = e.savedAt + CONFIG.arrivalMs;
-        if (at == null || t < at) at = t;
-      }
-    }
-    return at;
-  }
-
   dispose() {
     if (this.ghostTimer) clearTimeout(this.ghostTimer);
-    if (this.refreshTimer) clearTimeout(this.refreshTimer);
     this.disposables.forEach((d) => d.dispose());
   }
 }
@@ -213,31 +182,9 @@ class BoardProvider {
     this.data = data;
     this.view = null;
     this.lastSignature = '';
+    this.tick = null;
     this.autoRenderer = 'flap';
     this.onRendererChange = null;
-    this.theme = context.globalState.get('soloTheme', 'solo');
-  }
-
-  /* One button, labelled by the mode on screen (its glyph is the
-     current mode's, as in Signboard-Duo): pressing it advances to
-     the next style. The per-mode commands exist so the view title
-     can show the current mode's glyph. */
-  cycleMode() {
-    const order = ['flap', 'led'];
-    const labels = { flap: 'Split-Flap', led: 'LED' };
-    const next = order[(order.indexOf(this.effectiveMode()) + 1) % order.length];
-    vscode.window.setStatusBarMessage(`Signboard board: ${labels[next]}`, 2500);
-    setMode(next);
-  }
-
-  cycleTheme() {
-    const order = ['solo', 'lime', 'ice'];
-    const labels = { solo: 'Solo', lime: 'Lime', ice: 'Ice' };
-    const next = order[(order.indexOf(this.theme) + 1) % order.length];
-    this.theme = next;
-    this.context.globalState.update('soloTheme', next);
-    vscode.window.setStatusBarMessage(`Signboard theme: ${labels[next]}`, 2500);
-    this.push(true);
   }
 
   resolveWebviewView(view) {
@@ -251,7 +198,7 @@ class BoardProvider {
       if (msg && msg.type === 'ready') this.push(true);
       if (msg && msg.type === 'width') this.handleWidth(msg.width);
     });
-    const configSub = vscode.workspace.onDidChangeConfiguration((e) => {
+    vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('signboard') && this.view) {
         // Swap the renderer (flap <-> LED) by rebuilding the page; the
         // LED mask parameters (ledPitch / ledHole / ledGlow) also take
@@ -265,12 +212,9 @@ class BoardProvider {
     view.onDidChangeVisibility(() => {
       if (view.visible) this.push(true);
     });
-    view.onDidDispose(() => {
-      if (this.wakeTimer) clearTimeout(this.wakeTimer);
-      if (this.pushTimer) clearTimeout(this.pushTimer);
-      configSub.dispose();
-    });
-    this.armWake();
+    // Arrival windows and ghost expiries are time-based; re-check cheaply.
+    this.tick = setInterval(() => this.push(false), 1000);
+    view.onDidDispose(() => { if (this.tick) clearInterval(this.tick); });
     this.push(true);
   }
 
@@ -299,29 +243,13 @@ class BoardProvider {
     if (!this.view || !this.view.visible) return;
     const rows = this.data.rows();
     const mode = vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
-    const payload = { type: 'state', rows, lang: vscode.env.language, mode, line: this.data.lineName(), theme: this.theme };
-    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang + '|' + payload.line + '|' + this.theme;
+    const payload = { type: 'state', rows, lang: vscode.env.language, mode, line: this.data.lineName() };
+    const signature = JSON.stringify(rows) + '|' + mode + '|' + payload.lang + '|' + payload.line;
     if (!force && signature === this.lastSignature) return;
     this.lastSignature = signature;
     // A just-saved or just-cancelled row is the one worth watching: tell the
     // webview which row changed most recently so it can jump pages to it.
     this.view.webview.postMessage(payload);
-    this.armWake();
-  }
-
-  /* Wake exactly when the next arrival window runs out, instead of
-     polling every second: with nothing time-based pending, the board
-     costs nothing while it sits unchanged. */
-  armWake() {
-    if (this.wakeTimer) { clearTimeout(this.wakeTimer); this.wakeTimer = null; }
-    if (!this.view) return;
-    const at = this.data.nextArrivalAt();
-    if (at == null) return;
-    this.wakeTimer = setTimeout(() => {
-      this.wakeTimer = null;
-      this.push(false);
-      this.armWake();
-    }, Math.max(50, at - Date.now()));
   }
 
   notifyChange(kind, key) {
@@ -330,14 +258,7 @@ class BoardProvider {
         this.view.webview.postMessage({ type: 'event', kind, key });
       }
     }
-    this.schedulePush();
-  }
-
-  /* Bursts (tab operations firing several events, stat resolutions
-     landing together at startup) fold into one state push. */
-  schedulePush() {
-    if (this.pushTimer) return;
-    this.pushTimer = setTimeout(() => { this.pushTimer = null; this.push(true); }, 30);
+    this.push(true);
   }
 
   html(webview) {
@@ -396,7 +317,6 @@ ${autoScript}${ledScript}<script nonce="${nonce}" src="${js}"></script>
 function syncModeContext(effectiveMode) {
   const mode = effectiveMode || vscode.workspace.getConfiguration('signboard').get('mode', 'flap');
   vscode.commands.executeCommand('setContext', 'signboard.isLed', mode === 'led');
-  vscode.commands.executeCommand('setContext', 'signboard.isFlap', mode === 'flap');
 }
 
 async function setMode(next) {
@@ -422,15 +342,11 @@ function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand('signboard.showLed', () => setMode('led')),
     vscode.commands.registerCommand('signboard.showFlap', () => setMode('flap')),
-    vscode.commands.registerCommand('signboard.cycleTheme', () => provider.cycleTheme()),
-    vscode.commands.registerCommand('signboard.cycleMode', () => provider.cycleMode()),
-    vscode.commands.registerCommand('signboard.cycleModeFlap', () => provider.cycleMode()),
-    vscode.commands.registerCommand('signboard.cycleModeLed', () => provider.cycleMode()),
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('signboard.mode')) syncModeContext(provider.effectiveMode());
+      if (e.affectsConfiguration('signboard.mode')) syncModeContext();
     })
   );
-  syncModeContext(provider.effectiveMode());
+  syncModeContext();
   data.start(context);
   context.subscriptions.push({ dispose: () => data.dispose() });
 }

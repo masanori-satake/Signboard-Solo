@@ -70,6 +70,16 @@ function statusFor(entry, now) {
   return 'ontime';
 }
 
+function chunkPages(count, perPage) {
+  if (count <= 0 || perPage <= 0) return 1;
+  return Math.max(1, Math.ceil(count / perPage));
+}
+
+function pageOfIndex(index, perPage) {
+  if (perPage <= 0) return 0;
+  return Math.floor(index / perPage);
+}
+
 function hhmm(ms) {
   const d = new Date(ms);
   return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
@@ -100,13 +110,14 @@ function autoModeForWidth(width) {
    at 1, and the stable sort then showed the ghost one row too low.) */
 function mergeOrder(prevOrder, liveOrder, ghostKeys) {
   const liveSet = new Set(liveOrder);
-  const prevPos = new Map(prevOrder.map((k, i) => [k, i]));
-  const pos = (k) => (prevPos.has(k) ? prevPos.get(k) : Number.MAX_SAFE_INTEGER);
-  const ghosts = [...ghostKeys].sort((a, b) => pos(a) - pos(b));
+  const ghosts = [...ghostKeys].sort((a, b) => {
+    const ia = prevOrder.indexOf(a), ib = prevOrder.indexOf(b);
+    return (ia < 0 ? Number.MAX_SAFE_INTEGER : ia) - (ib < 0 ? Number.MAX_SAFE_INTEGER : ib);
+  });
   const anchored = new Map(); // live key -> ghost keys emitted before it
   const trailing = [];
   for (const g of ghosts) {
-    const gi = prevPos.has(g) ? prevPos.get(g) : -1;
+    const gi = prevOrder.indexOf(g);
     let anchor = null;
     if (gi >= 0) {
       for (let j = gi + 1; j < prevOrder.length; j++) {
@@ -138,6 +149,8 @@ module.exports = {
   boardName,
   tilesFor,
   statusFor,
+  chunkPages,
+  pageOfIndex,
   hhmm,
   autoModeForWidth,
   parentDirName,

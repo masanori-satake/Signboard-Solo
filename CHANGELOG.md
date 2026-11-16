@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.0] - 2026-11-17
+
+- Title-bar buttons now follow one convention across Signboard-Solo and Signboard-Duo: a button's glyph and tooltip say what happens when you press it, not the current state. The board-style button therefore shows the *next* board's glyph and names it ("Switch to LED Board" / "Switch to Flap Board"), reversing the 1.9.7 choice that showed the board currently on screen
+
+- タイトルバーのボタンを、Signboard-Solo と Signboard-Duo で共通の約束事に統一した：グリフとツールチップは今の状態ではなく、押すと起きることを表す。盤面スタイルのボタンは、切り替え先のグリフと名前（「LED ボードに切り替え」「フラップボードに切り替え」）を出すようにした（1.9.7 で採った「現在の盤面を示す」方式からの変更）
+
 ## [1.9.7] - 2026-11-14
 
 - The view-title mode button now follows Signboard-Duo's convention: its glyph names the board currently on screen (flight = flap board, dashboard = LED) and pressing it switches to the other board, instead of naming the destination. The direct Show LED / Show flap commands remain available from the Command Palette

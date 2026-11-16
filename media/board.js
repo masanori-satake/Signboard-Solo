@@ -241,14 +241,6 @@ function render(pageChanged) {
     measuredRowH = firstRow.offsetHeight;
     if (rowsPerPage() !== per) { render(pageChanged); return; }
   }
-  // If the remark plate's right edge passes the rows area's right
-  // edge, the plate would clip — hide it entirely instead. Geometry
-  // is visibility-independent, so this cannot oscillate.
-  const plateEl = rowsEl.querySelector('.remark-plate');
-  if (plateEl) {
-    const over = plateEl.getBoundingClientRect().right > rowsEl.getBoundingClientRect().right + 1;
-    boardEl.classList.toggle('no-plate', over);
-  }
   document.getElementById('pageInfo').textContent = pg > 1 ? 'PAGE ' + (currentPage + 1) + ' / ' + pg : '';
   document.getElementById('flightCount').textContent = rows.length
     ? (LANG_JA ? rows.length + ' 便' : rows.length + (rows.length === 1 ? ' FLIGHT' : ' FLIGHTS')) : '';
@@ -271,7 +263,6 @@ window.addEventListener('message', (ev) => {
   if (!msg) return;
   if (msg.type === 'state') {
     setLocale(msg.lang);
-    document.body.dataset.theme = msg.theme || 'solo';
     const before = prevByKey;
     rows = msg.rows || [];
     // If a just-saved or just-cancelled row sits on another page, jump to it.
@@ -346,22 +337,20 @@ for (let i = 0; i < 8; i++) {
     clockDigits.push(dig);
   }
 }
-const clockSegs = clockDigits.map((dig) => [...dig.querySelectorAll('.seg')]);
-const clockDots = [...clockEl.querySelectorAll('.cdot')];
 function tickClock() {
   const d = new Date();
   const parts = [d.getHours(), d.getMinutes(), d.getSeconds()].map((v) => String(v).padStart(2, '0')).join('');
   [...parts].forEach((ch, i) => {
     const on = SEG_MAP[ch];
-    clockSegs[i].forEach((seg) => {
+    clockDigits[i].querySelectorAll('.seg').forEach((seg) => {
       const name = [...seg.classList].find((c) => c.startsWith('seg-')).slice(4);
       seg.classList.toggle('on', on.includes(name));
     });
   });
   const blink = d.getSeconds() % 2 === 0;
-  clockDots.forEach((c) => c.classList.toggle('on', blink));
+  clockEl.querySelectorAll('.cdot').forEach((c) => c.classList.toggle('on', blink));
 }
-setInterval(() => { if (!document.hidden) tickClock(); }, 1000);
+setInterval(tickClock, 1000);
 tickClock();
 
 computeTier();

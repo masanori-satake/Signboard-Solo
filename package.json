@@ -87,15 +87,15 @@
       {
         "command": "signboard.cycleModeFlap",
         "title": "%command.cycleModeFlap.title%",
-        "icon": {
-          "light": "media/flight-light.svg",
-          "dark": "media/flight-dark.svg"
-        }
+        "icon": "$(dashboard)"
       },
       {
         "command": "signboard.cycleModeLed",
         "title": "%command.cycleModeLed.title%",
-        "icon": "$(dashboard)"
+        "icon": {
+          "light": "media/flight-light.svg",
+          "dark": "media/flight-dark.svg"
+        }
       }
     ],
     "menus": {
@@ -143,7 +143,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.9.7",
+  "version": "1.10.0",
   "icon": "icon.png",
   "repository": {
     "type": "git",
