@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.3] - 2026-11-20
+
+- Hardening pass (no behaviour or appearance change), from the 2026-11-20 security/reliability audit — three low-severity items: the webview CSP nonce is now generated with a cryptographic random source (`crypto.randomBytes`) instead of the predictable `Date.now()` + `Math.random()` combination; the four `signboard.*` settings now declare `"scope": "window"`, so a workspace (for example a cloned repository's `.vscode/settings.json`) can no longer change the board's mode or LED parameters — user settings still can, and the values are embedded and clamped exactly as before; and the development-only `scripts/check-version.js` now runs git through argument arrays (`execFileSync`) instead of shell string interpolation (that script is excluded from the VSIX and was never part of the extension at runtime)
+
+- 堅牢化（挙動・見た目の変更なし）。2026-11-20 のセキュリティ／信頼性監査で挙がった低重要度3件への対応：Webview の CSP nonce を、推測可能な `Date.now()` と `Math.random()` の組み合わせから暗号論的乱数（`crypto.randomBytes`）での生成に変更した。`signboard.*` の設定4件に `"scope": "window"` を宣言し、ワークスペース（クローンしたリポジトリの `.vscode/settings.json` 等）からは盤面モードや LED パラメータを変更できないようにした（ユーザー設定からは従来どおり変更でき、値の埋め込みとクランプの扱いは不変）。あわせて開発用スクリプト `scripts/check-version.js` の git 実行を、シェル文字列補間から引数配列形式（`execFileSync`）へ統一した（このスクリプトは VSIX に含まれず、拡張の実行時には使われない）
+
 ## [1.10.2] - 2026-11-17
 
 - Documentation only (no behaviour change): a source comment still described the title-bar mode button with the pre-1.10.0 convention ("the glyph shows the current mode"), the opposite of what 1.10.0 shipped. Corrected so the code, the changelog and the actual buttons tell the same story. Found in the audit that followed Signboard-Duo's hardening pass; the rest of that checklist (value clamps, change detection, error containment) was verified as already in place on the Solo side — the LED renderer clamps its own parameters, pushes are event-driven with a precise wake timer instead of polling, and there is no network, parser or token surface to harden.

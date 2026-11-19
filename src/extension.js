@@ -2,6 +2,7 @@
 
 const vscode = require('vscode');
 const path = require('path');
+const crypto = require('crypto');
 const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName, mergeOrder } = require('./model');
 
 /* ------------------------------------------------------------------ *
@@ -350,7 +351,7 @@ class BoardProvider {
     const jsFile = led ? 'led.js' : 'board.js';
     const css = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', cssFile));
     const js = webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, 'media', jsFile));
-    const nonce = String(Date.now()) + Math.floor(Math.random() * 1e9);
+    const nonce = crypto.randomBytes(16).toString('base64');
     const autoScript = mode === 'auto'
       ? `<script nonce="${nonce}">window.__SB_AUTO = true;</script>\n`
       : '';
