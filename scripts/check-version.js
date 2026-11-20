@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync, execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 const rootDir = path.resolve(__dirname, '..');
 
@@ -159,7 +159,7 @@ if (checkBump) {
     } else {
       let basePkgContent = null;
       try {
-        basePkgContent = execSync(`git show ${baseRef}:package.json`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+        basePkgContent = execFileSync('git', ['show', `${baseRef}:package.json`], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
       } catch (e) {
         // package.json might not exist in baseRef or git error
       }
@@ -169,9 +169,9 @@ if (checkBump) {
         const baseVersion = basePkg.version;
 
         // Get diff files compared to merge-base of HEAD and baseRef
-        const mergeBase = execSync(`git merge-base HEAD ${baseRef}`, { encoding: 'utf8' }).trim();
-        const diffOutput = execSync(`git diff --name-only ${mergeBase}`, { encoding: 'utf8' }).trim();
-        const untrackedOutput = execSync('git ls-files -o --exclude-standard', { encoding: 'utf8' }).trim();
+        const mergeBase = execFileSync('git', ['merge-base', 'HEAD', baseRef], { encoding: 'utf8' }).trim();
+        const diffOutput = execFileSync('git', ['diff', '--name-only', mergeBase], { encoding: 'utf8' }).trim();
+        const untrackedOutput = execFileSync('git', ['ls-files', '-o', '--exclude-standard'], { encoding: 'utf8' }).trim();
 
         const diffFiles = diffOutput ? diffOutput.split('\n') : [];
         const untrackedFiles = untrackedOutput ? untrackedOutput.split('\n') : [];

@@ -3,6 +3,18 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.4] - 2026-11-20
+
+- Follow-up hardening fix (no behaviour or appearance change): the four `signboard.*` settings moved from `"scope": "window"` (added in 1.10.3) to `"scope": "application"`. Per the VS Code contribution-point documentation, `window`-scoped settings can still be overridden in workspace settings, so 1.10.3 did not actually exclude a cloned repository's `.vscode/settings.json`; `application`-scoped settings can only be configured in user settings, which closes that path while keeping user settings fully in charge. `machine` / `machine-overridable` were not chosen: the former would stop remote windows from inheriting the local user value and drop these preferences from Settings Sync, and the latter still allows workspace overrides. The mode commands (`setMode`) now always write to the user (Global) settings target instead of mirroring an existing workspace value
+
+- 堅牢化の追補（挙動・見た目の変更なし）：`signboard.*` の設定4件のスコープを、1.10.3 で入れた `"scope": "window"` から `"scope": "application"` へ変更した。VS Code の公式ドキュメントでは `window` スコープでもワークスペース設定で上書きできるため、1.10.3 の宣言だけではクローンしたリポジトリの `.vscode/settings.json` を実際には除外できていなかった。`application` スコープはユーザー設定でのみ変更できるため、この経路を閉じつつ、ユーザー設定からは従来どおり変更できる。`machine` はリモートウィンドウでローカルのユーザー設定値を引き継がず Settings Sync からも外れるため、`machine-overridable` はワークスペースでの上書きを許すため、いずれも採用しなかった。あわせてモード切替コマンド（`setMode`）の書き込み先を、ワークスペース値の有無に追随する方式から、常にユーザー設定（Global）へ書く方式に統一した
+
+## [1.10.3] - 2026-11-20
+
+- Hardening pass (no behaviour or appearance change), from the 2026-11-20 security/reliability audit — three low-severity items: the webview CSP nonce is now generated with a cryptographic random source (`crypto.randomBytes`) instead of the predictable `Date.now()` + `Math.random()` combination; the four `signboard.*` settings now declare `"scope": "window"`, so a workspace (for example a cloned repository's `.vscode/settings.json`) can no longer change the board's mode or LED parameters — user settings still can, and the values are embedded and clamped exactly as before; and the development-only `scripts/check-version.js` now runs git through argument arrays (`execFileSync`) instead of shell string interpolation (that script is excluded from the VSIX and was never part of the extension at runtime)
+
+- 堅牢化（挙動・見た目の変更なし）。2026-11-20 のセキュリティ／信頼性監査で挙がった低重要度3件への対応：Webview の CSP nonce を、推測可能な `Date.now()` と `Math.random()` の組み合わせから暗号論的乱数（`crypto.randomBytes`）での生成に変更した。`signboard.*` の設定4件に `"scope": "window"` を宣言し、ワークスペース（クローンしたリポジトリの `.vscode/settings.json` 等）からは盤面モードや LED パラメータを変更できないようにした（ユーザー設定からは従来どおり変更でき、値の埋め込みとクランプの扱いは不変）。あわせて開発用スクリプト `scripts/check-version.js` の git 実行を、シェル文字列補間から引数配列形式（`execFileSync`）へ統一した（このスクリプトは VSIX に含まれず、拡張の実行時には使われない）
+
 ## [1.10.2] - 2026-11-17
 
 - Documentation only (no behaviour change): a source comment still described the title-bar mode button with the pre-1.10.0 convention ("the glyph shows the current mode"), the opposite of what 1.10.0 shipped. Corrected so the code, the changelog and the actual buttons tell the same story. Found in the audit that followed Signboard-Duo's hardening pass; the rest of that checklist (value clamps, change detection, error containment) was verified as already in place on the Solo side — the LED renderer clamps its own parameters, pushes are event-driven with a precise wake timer instead of polling, and there is no network, parser or token surface to harden.

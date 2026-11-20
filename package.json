@@ -27,6 +27,7 @@
             "%config.mode.led%",
             "%config.mode.auto%"
           ],
+          "scope": "application",
           "type": "string"
         },
         "signboard.ledPitch": {
@@ -34,19 +35,22 @@
           "default": 3,
           "minimum": 3,
           "maximum": 12,
-          "description": "%config.ledPitch.description%"
+          "description": "%config.ledPitch.description%",
+          "scope": "application"
         },
         "signboard.ledHole": {
           "type": "number",
           "default": 38,
           "minimum": 25,
           "maximum": 48,
-          "description": "%config.ledHole.description%"
+          "description": "%config.ledHole.description%",
+          "scope": "application"
         },
         "signboard.ledGlow": {
           "type": "boolean",
           "default": true,
-          "description": "%config.ledGlow.description%"
+          "description": "%config.ledGlow.description%",
+          "scope": "application"
         }
       },
       "title": "%config.title%"
@@ -143,7 +147,7 @@
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.10.2",
+  "version": "1.10.4",
   "icon": "icon.png",
   "repository": {
     "type": "git",
