@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.4] - 2026-11-20
+
+- Follow-up hardening fix (no behaviour or appearance change): the four `signboard.*` settings moved from `"scope": "window"` (added in 1.10.3) to `"scope": "application"`. Per the VS Code contribution-point documentation, `window`-scoped settings can still be overridden in workspace settings, so 1.10.3 did not actually exclude a cloned repository's `.vscode/settings.json`; `application`-scoped settings can only be configured in user settings, which closes that path while keeping user settings fully in charge. `machine` / `machine-overridable` were not chosen: the former would stop remote windows from inheriting the local user value and drop these preferences from Settings Sync, and the latter still allows workspace overrides. The mode commands (`setMode`) now always write to the user (Global) settings target instead of mirroring an existing workspace value
+
+- 堅牢化の追補（挙動・見た目の変更なし）：`signboard.*` の設定4件のスコープを、1.10.3 で入れた `"scope": "window"` から `"scope": "application"` へ変更した。VS Code の公式ドキュメントでは `window` スコープでもワークスペース設定で上書きできるため、1.10.3 の宣言だけではクローンしたリポジトリの `.vscode/settings.json` を実際には除外できていなかった。`application` スコープはユーザー設定でのみ変更できるため、この経路を閉じつつ、ユーザー設定からは従来どおり変更できる。`machine` はリモートウィンドウでローカルのユーザー設定値を引き継がず Settings Sync からも外れるため、`machine-overridable` はワークスペースでの上書きを許すため、いずれも採用しなかった。あわせてモード切替コマンド（`setMode`）の書き込み先を、ワークスペース値の有無に追随する方式から、常にユーザー設定（Global）へ書く方式に統一した
+
 ## [1.10.3] - 2026-11-20
 
 - Hardening pass (no behaviour or appearance change), from the 2026-11-20 security/reliability audit — three low-severity items: the webview CSP nonce is now generated with a cryptographic random source (`crypto.randomBytes`) instead of the predictable `Date.now()` + `Math.random()` combination; the four `signboard.*` settings now declare `"scope": "window"`, so a workspace (for example a cloned repository's `.vscode/settings.json`) can no longer change the board's mode or LED parameters — user settings still can, and the values are embedded and clamped exactly as before; and the development-only `scripts/check-version.js` now runs git through argument arrays (`execFileSync`) instead of shell string interpolation (that script is excluded from the VSIX and was never part of the extension at runtime)

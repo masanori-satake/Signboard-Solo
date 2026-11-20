@@ -403,11 +403,9 @@ function syncModeContext(effectiveMode) {
 
 async function setMode(next) {
   const cfg = vscode.workspace.getConfiguration('signboard');
-  const info = cfg.inspect('mode');
-  const target = info && info.workspaceValue !== undefined
-    ? vscode.ConfigurationTarget.Workspace
-    : vscode.ConfigurationTarget.Global;
-  await cfg.update('mode', next, target);
+  // signboard.mode は application スコープ（ユーザー設定でのみ変更可能）のため、
+  // 書き込み先は常に Global。ワークスペース値の有無で分岐させない。
+  await cfg.update('mode', next, vscode.ConfigurationTarget.Global);
 }
 
 function activate(context) {
