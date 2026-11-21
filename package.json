@@ -8,6 +8,12 @@
     "onCommand:signboard.cycleModeFlap",
     "onCommand:signboard.cycleModeLed"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true,
+      "description": "%capabilities.untrustedWorkspaces.description%"
+    }
+  },
   "categories": [
     "Other"
   ],
@@ -140,14 +146,14 @@
   "publisher": "masanori-satake",
   "scripts": {
     "check": "node --check src/extension.js && node --check src/model.js && node --check media/board.js && node --check media/led.js",
-    "package": "npm run check-version && npx @vscode/vsce package",
+    "package": "npm run check-version && vsce package",
     "test": "node --test test/*.test.js",
     "check-version": "node scripts/check-version.js",
     "check-version-bump": "node scripts/check-version.js --check-bump",
     "update-version": "node scripts/update-version.js",
     "vscode:prepublish": "npm run check && npm test"
   },
-  "version": "1.10.4",
+  "version": "1.10.5",
   "icon": "icon.png",
   "repository": {
     "type": "git",
@@ -156,5 +162,8 @@
   "homepage": "https://github.com/masanori-satake/Signboard-Solo#readme",
   "bugs": {
     "url": "https://github.com/masanori-satake/Signboard-Solo/issues"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^4.1.1"
   }
 }

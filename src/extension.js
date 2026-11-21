@@ -3,7 +3,7 @@
 const vscode = require('vscode');
 const path = require('path');
 const crypto = require('crypto');
-const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName, mergeOrder } = require('./model');
+const { CONFIG, extOf, statusFor, autoModeForWidth, parentDirName, mergeOrder, ledSettings, inlineJson } = require('./model');
 
 /* ------------------------------------------------------------------ *
  * Data layer: turns VS Code's tabs into board rows.
@@ -356,12 +356,16 @@ class BoardProvider {
       ? `<script nonce="${nonce}">window.__SB_AUTO = true;</script>\n`
       : '';
     const cfg = vscode.workspace.getConfiguration('signboard');
+    // LED parameters are validated/clamped host-side (ledSettings) and the
+    // payload is escaped for inline embedding (inlineJson), so a mistyped
+    // setting value can neither leave the schema ranges nor terminate the
+    // script element. The webview clamps once more on its side.
     const ledScript = led
-      ? `<script nonce="${nonce}">window.__SB_LED = ${JSON.stringify({
+      ? `<script nonce="${nonce}">window.__SB_LED = ${inlineJson(ledSettings({
         pitch: cfg.get('ledPitch', 3),
         hole: cfg.get('ledHole', 38),
         glow: cfg.get('ledGlow', true),
-      })};</script>\n`
+      }))};</script>\n`
       : '';
     const body = led
       ? `<div class="board" id="board">

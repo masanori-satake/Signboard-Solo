@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, autoModeForWidth, parentDirName, mergeOrder,
+  CONFIG, extOf, stripExt, hasCjk, truncMid, boardName, tilesFor, statusFor, autoModeForWidth, parentDirName, mergeOrder, ledSettings, inlineJson,
 } = require('../src/model');
 
 test('extOf takes the last extension, lowercased', () => {
@@ -88,4 +88,34 @@ test('auto mode uses flap below 520px and LED at 520px and wider', () => {
   assert.equal(autoModeForWidth(CONFIG.autoLedMinWidth), 'led');
   assert.equal(autoModeForWidth(1200), 'led');
   assert.equal(autoModeForWidth(Number.NaN), 'flap');
+});
+
+test('ledSettings passes valid values through', () => {
+  assert.deepEqual(ledSettings({ pitch: 5, hole: 30, glow: false }), { pitch: 5, hole: 30, glow: false });
+  assert.deepEqual(ledSettings({ pitch: 3, hole: 38, glow: true }), { pitch: 3, hole: 38, glow: true });
+});
+
+test('ledSettings clamps numbers to the schema ranges', () => {
+  assert.deepEqual(ledSettings({ pitch: 100, hole: 100, glow: true }), { pitch: 12, hole: 48, glow: true });
+  assert.deepEqual(ledSettings({ pitch: 0, hole: 0, glow: true }), { pitch: 3, hole: 25, glow: true });
+});
+
+test('ledSettings falls back to defaults for wrong-typed values', () => {
+  // A mistyped setting (e.g. a string where a number belongs) must never
+  // reach the webview payload unchecked.
+  assert.deepEqual(ledSettings({ pitch: 'x', hole: null, glow: 'yes' }), { pitch: 3, hole: 38, glow: true });
+  assert.deepEqual(ledSettings({ pitch: Number.NaN, hole: undefined, glow: 0 }), { pitch: 3, hole: 38, glow: true });
+  assert.deepEqual(ledSettings({}), { pitch: 3, hole: 38, glow: true });
+  assert.deepEqual(ledSettings(null), { pitch: 3, hole: 38, glow: true });
+  assert.deepEqual(ledSettings(undefined), { pitch: 3, hole: 38, glow: true });
+});
+
+test('inlineJson can never terminate the script element', () => {
+  const payload = { name: '</script><script>alert(1)</script>' };
+  const json = inlineJson(payload);
+  assert.equal(json.includes('</script>'), false);
+  assert.equal(json.includes('<'), false);
+  // The escaped form still decodes to the identical value.
+  assert.deepEqual(JSON.parse(json), payload);
+  assert.deepEqual(JSON.parse(inlineJson({ pitch: 3, hole: 38, glow: true })), { pitch: 3, hole: 38, glow: true });
 });
