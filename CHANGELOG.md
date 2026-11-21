@@ -3,6 +3,12 @@
 All notable changes to Signboard-Solo are documented here.
 変更内容はここに記録します。
 
+## [1.10.5] - 2026-11-22
+
+- Hardening pass (no behaviour or appearance change), from the 2026-11-22 security audit — three low-severity items: the manifest now declares Workspace Trust support explicitly (`capabilities.untrustedWorkspaces.supported: true`), matching what the extension actually does — it only displays open tabs' file names and modification times and never reads file contents or executes code; the LED settings (`ledPitch` / `ledHole` / `ledGlow`) are now validated and clamped to their schema ranges on the host side before being embedded into the webview's inline script, and the embedded JSON escapes `<` so a `</script>` sequence can never terminate the script element (the webview keeps its own second clamp, and regression tests cover both helpers); and the packaging tool `@vscode/vsce` is now pinned in `devDependencies` and resolved through the lockfile instead of being fetched unpinned via `npx` at release time (development-only change; the VSIX contents are unchanged)
+
+- 堅牢化（挙動・見た目の変更なし）。2026-11-22 のセキュリティ監査で挙がった低重要度3件への対応：マニフェストに Workspace Trust の対応を明示した（`capabilities.untrustedWorkspaces.supported: true`）。本拡張は開いているタブのファイル名と更新時刻を表示するだけで、ファイル内容の読み取りもコード実行もしないため、その実態に合わせた宣言である。LED 設定（`ledPitch`／`ledHole`／`ledGlow`）は、Webview のインラインスクリプトへ埋め込む前にホスト側で型検証とスキーマ範囲へのクランプを行うようにし、あわせて埋め込み JSON の `<` をエスケープして `</script>` の並びで script 要素を終了させられないようにした（Webview 側の二重クランプは従来どおり残し、両ヘルパーに回帰テストを追加）。また、パッケージング用ツール `@vscode/vsce` を `devDependencies` にピン留めして lockfile 管理下に置き、リリース時に `npx` で未固定の最新版を取得する方式をやめた（開発側のみの変更で、VSIX の内容は不変）
+
 ## [1.10.4] - 2026-11-20
 
 - Follow-up hardening fix (no behaviour or appearance change): the four `signboard.*` settings moved from `"scope": "window"` (added in 1.10.3) to `"scope": "application"`. Per the VS Code contribution-point documentation, `window`-scoped settings can still be overridden in workspace settings, so 1.10.3 did not actually exclude a cloned repository's `.vscode/settings.json`; `application`-scoped settings can only be configured in user settings, which closes that path while keeping user settings fully in charge. `machine` / `machine-overridable` were not chosen: the former would stop remote windows from inheriting the local user value and drop these preferences from Settings Sync, and the latter still allows workspace overrides. The mode commands (`setMode`) now always write to the user (Global) settings target instead of mirroring an existing workspace value

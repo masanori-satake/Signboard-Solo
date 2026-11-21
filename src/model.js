@@ -90,6 +90,34 @@ function autoModeForWidth(width) {
   return Number.isFinite(width) && width >= CONFIG.autoLedMinWidth ? 'led' : 'flap';
 }
 
+// LED board parameters, validated host-side against the schema ranges
+// (package.json: ledPitch 3..12, ledHole 25..48, ledGlow boolean) before
+// they are embedded into the webview HTML. Configuration values are
+// user-controlled input: a wrong-typed value falls back to the default
+// instead of reaching the inline script unchecked. The webview clamps
+// again on its side (media/led.js); this is the first gate.
+function ledSettings(raw) {
+  const src = raw && typeof raw === 'object' ? raw : {};
+  const num = (v, def, min, max) => {
+    if (v === null || v === undefined) return def;
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def;
+  };
+  return {
+    pitch: num(src.pitch, 3, 3, 12),
+    hole: num(src.hole, 38, 25, 48),
+    glow: typeof src.glow === 'boolean' ? src.glow : true,
+  };
+}
+
+// JSON for embedding inside an inline <script> element. JSON.stringify
+// does not escape "</script>", which would terminate the element early;
+// replacing every "<" with its unicode escape makes that structurally
+// impossible while decoding to the identical value.
+function inlineJson(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c');
+}
+
 /* Display order for live rows plus lingering CANCELLED ghosts.
    Live keys follow the current tab order. A ghost is not part of that
    order anymore, so it anchors to the first live key that followed it
@@ -141,5 +169,7 @@ module.exports = {
   hhmm,
   autoModeForWidth,
   parentDirName,
+  ledSettings,
+  inlineJson,
   mergeOrder,
 };
